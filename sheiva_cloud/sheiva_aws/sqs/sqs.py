@@ -85,3 +85,14 @@ class SQS:
             ReceiptHandle=receipt_handle,
         )
         return response
+
+    def purge_queue(self) -> Dict:
+        """
+        Purge all messages from the queue.
+        Returns:
+            dict: The response from the SQS purge_queue method.
+        """
+
+        response = self.sqs_session.purge_queue(QueueUrl=self.queue_url)
+        return response
+

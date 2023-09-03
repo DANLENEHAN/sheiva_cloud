@@ -1,0 +1,13 @@
+# Create virtualenv
+virtualenv --python="/opt/homebrew/bin/python3.11" ~/virtualenvs/sheiva_cloud
+
+# Install editable sheiva_cloud
+pip install -e .
+
+## AWS Stuff
+
+# Install aws cli
+pip install awscli
+
+# Set up aws credentials
+aws configure

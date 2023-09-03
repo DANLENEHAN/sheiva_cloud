@@ -1,0 +1,21 @@
+[project]
+name = "sheiva_cloud"
+version = "1.0.0"
+dependencies = [
+	"boto3==1.28.40",
+	"awscli==1.29.40",
+]
+
+[tool.setuptools]
+packages = ["sheiva_cloud"]
+
+[tool.black]
+line-length = 79
+target-version = ['py311']
+
+
+[tool.isort]
+atomic = true
+profile = "black"
+line_length = 79
+skip_gitignore = true

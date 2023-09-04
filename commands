@@ -11,3 +11,13 @@ pip install awscli
 
 # Set up aws credentials
 aws configure
+
+# Installing a version of kuda
+pip install git+ssh://git@github.com/DANLENEHAN/kuda.git@v1.0.0
+
+# Creating a package version on Git
+git tag -a v1.0.0 -m "Version 1.0.0"
+git push --tags
+
+# Go to https://github.com/{username}/{project}/releases
+And create a release with a tag

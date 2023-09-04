@@ -95,4 +95,3 @@ class SQS:
 
         response = self.sqs_session.purge_queue(QueueUrl=self.queue_url)
         return response
-

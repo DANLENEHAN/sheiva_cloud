@@ -27,7 +27,7 @@ def parse_sqs_message(sqs_body: Dict) -> Tuple[str, str]:
     if len(messages) > 1:
         raise ValueError("More than one message received")
 
-    receipt_handle = sqs_body["receiptHandle"]
+    receipt_handle = message["receiptHandle"]
     body = message["body"]
 
     return body, receipt_handle

@@ -12,6 +12,9 @@ pip install awscli
 # Set up aws credentials
 aws configure
 
+## Creating a Dockerfile for a Lambda function ##
+#### START #####
+
 # Installing a version of kuda
 pip install git+ssh://git@github.com/DANLENEHAN/kuda.git@v1.0.0
 
@@ -21,3 +24,21 @@ git push --tags
 
 # Go to https://github.com/{username}/{project}/releases
 And create a release with a tag
+
+# Build a lambda Dockerfile
+# kud:workout_scraper is REPOSITORY:TAG 
+docker build --platform linux/amd64 -t kuda:workout_scraper .
+
+# Can re-tag to ECR repo
+docker tag kuda:workout_scraper 381528172721.dkr.ecr.eu-west-1.amazonaws.com/kuda:latest
+
+# Push image to ECR repo
+docker push 381528172721.dkr.ecr.eu-west-1.amazonaws.com/kuda:latest
+
+# Tag the image
+docker tag kuda:workout_scraper:latest
+
+# Authenticate your Docker account with kuda ECR repo
+aws ecr get-login-password --region eu-west-1 | docker login --username dlengine --password-stdin 381528172721.dkr.ecr.eu-west-1.amazonaws.com/kuda
+
+#### END ####

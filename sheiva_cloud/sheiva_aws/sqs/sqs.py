@@ -1,3 +1,11 @@
+"""
+SQS Queue class for interacting with AWS SQS.
+
+Notes:
+    For triggering lambda envocations:
+    - The maximum is 10,000 for standard queues and 10 for FIFO queues.
+"""
+
 from typing import Dict, Optional
 
 import boto3
@@ -6,7 +14,7 @@ import boto3
 class SQS:
     """
     Class for interacting with AWS SQS.
-    Currenrtly our message deduplication
+    Currently our message deduplication
     scope is set to Message group so no need
     for message deduplication id.
     """

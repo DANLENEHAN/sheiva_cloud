@@ -161,3 +161,6 @@ cython_debug/
 
 # Secrets folder
 access_secrets
+
+# ignore id_rsa private keys
+id_rsa*

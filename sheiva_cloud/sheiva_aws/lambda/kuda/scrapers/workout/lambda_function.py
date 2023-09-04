@@ -1,6 +1,6 @@
 from typing import Dict, Tuple
 
-from kuda.scrapers.workout.scraper import scrape_workout
+from kuda.scrapers import scrape_workout
 
 
 def run_scraper(workout_link: str) -> Dict:

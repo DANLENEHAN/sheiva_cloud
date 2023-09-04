@@ -6,13 +6,12 @@ dependencies = [
 	"awscli==1.29.40",
 ]
 
-[tool.setuptools]
-packages = ["sheiva_cloud"]
+[tool.setuptools.packages]
+find = {} 
 
 [tool.black]
 line-length = 79
 target-version = ['py311']
-
 
 [tool.isort]
 atomic = true

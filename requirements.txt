@@ -1,2 +1,3 @@
 mypy==1.5.1
+pre-commit
 git+ssh://git@github.com/DANLENEHAN/kuda.git@v1.0.1#egg=kuda

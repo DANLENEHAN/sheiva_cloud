@@ -1,9 +1,14 @@
 """
 SQS Queue class for interacting with AWS SQS.
 
-Notes:
-    For triggering lambda envocations:
-    - The maximum is 10,000 for standard queues and 10 for FIFO queues.
+This is a 'Standard SQS queue (not FIFO)'. This means that
+messages are not guaranteed to be delivered in the order they
+are sent. If this queue has a dead letter queue (DLQ) attached
+after the number of retries is exceeded, the message will be
+sent to the DLQ. Unfortunately, the minimum number of retries
+is 1 which actually means that the message will be sent to the
+DLQ after the second attempt. This is because the first attempt
+is the initial attempt and the second attempt is the first retry.
 """
 
 from typing import Dict, Optional
@@ -11,36 +16,29 @@ from typing import Dict, Optional
 import boto3
 
 
-class SQS:
+class SimpleSQS:
     """
-    Class for interacting with AWS SQS.
-    Currently our message deduplication
-    scope is set to Message group so no need
-    for message deduplication id.
+    Class for interacting with Simple Queue Service (SQS).
     """
 
     def __init__(
         self,
         queue_url: str,
-        message_group_id: Optional[str] = None,
         boto3_session: Optional[boto3.Session] = None,
     ):
         self.sqs_session = boto3_session or boto3.Session().client("sqs")
         self.queue_url = queue_url
-        self.message_group_id = message_group_id
 
     def send_message(
         self,
         message_body: str,
         message_attributes: Optional[dict] = None,
-        message_group_id: Optional[str] = None,
     ) -> Dict:
         """
         Send a message to the queue.
         Args:
             message_body (str): The body of the message.
             message_attributes (dict): The message attributes.
-            message_group_id (str): The message group id.
         Returns:
             dict: The response from the SQS send_message method.
         """
@@ -48,8 +46,7 @@ class SQS:
         response = self.sqs_session.send_message(
             QueueUrl=self.queue_url,
             MessageBody=message_body,
-            MessageAttributes=message_attributes,
-            MessageGroupId=message_group_id or self.message_group_id,
+            MessageAttributes=message_attributes or {},
         )
         return response
 

@@ -15,7 +15,7 @@ from kuda.scrapers import scrape_workout
 from sheiva_cloud.sheiva_aws.sqs.standard_sqs import StandardSQS
 
 
-class WorkoutLink(TypedDict):
+class WorkoutLinkMessage(TypedDict):
     """
     Workout link object.
     """
@@ -42,50 +42,51 @@ def run_scraper(workout_link: str) -> Dict:
 
 
 def scrape_workouts(
-    workout_links: List[WorkoutLink], queue: StandardSQS
+    workout_link_messages: List[WorkoutLinkMessage], queue: StandardSQS
 ) -> List[Dict]:
     """
     Scrapes all the workout links. Uploads any sucessful workouts to s3.
     Any unsuccessful workouts will be sent to the dead letter queue.
     Args:
-        workout_links (List[WorkoutLink]): list of workout link objects
+        workout_link_messages (List[WorkoutLinkMessage]): list of workout link objects
         queue (StandardSQS): StandardSQS object
     """
 
     scraped_workouts = []
-    for workout_link in workout_links:
-        print(f"Attempted to scrap '{workout_link['workout_link']}'")
-        workout_data = run_scraper(workout_link["workout_link"])
+    for message in workout_link_messages:
+        workout_link = message["workout_link"]
+        print(f"Attempting to scrape '{workout_link}'")
+        workout_data = run_scraper(workout_link)
         if workout_data:
-            print("Workout scrape successful")
+            print(f"Workout scrape of '{workout_link}' successful")
             scraped_workouts.append(workout_data)
-            queue.delete_message(receipt_handle=workout_link["receipt_handle"])
+            queue.delete_message(receipt_handle=message["receipt_handle"])
         else:
             print(
-                "Workout scrape unsuccessful with be sent to dead letter queue"
+                f"Workout scrape of '{workout_link}' unsuccessful with be sent to dead letter queue"
             )
 
     print("Finished scraping workouts")
     return scraped_workouts
 
 
-def parse_sqs_message_data(sqs_body: Dict) -> List[WorkoutLink]:
+def parse_sqs_message_data(sqs_body: Dict) -> List[WorkoutLinkMessage]:
     """
-    Takes SQS message and extracts all the bodies
+    Takes SQS message event and extracts all the message bodies
     into a list.
     Args:
         sqs_body (Dict): body of SQS message
     Returns:
-        List[WorkoutLink]: list of workout link objects
+        List[WorkoutLinkMessage]: list of workout link messages
     """
     messages = sqs_body["Records"]
 
     print(
-        f"Parsing {len(messages)} btached message{'s' if len(messages) > 1 else ''}"
+        f"Parsing {len(messages)} batched message{'s' if len(messages) > 1 else ''}"
     )
 
-    workout_links = [
-        WorkoutLink(
+    workout_link_messages = [
+        WorkoutLinkMessage(
             {
                 "workout_link": message["body"],
                 "receipt_handle": message["receiptHandle"],
@@ -93,15 +94,12 @@ def parse_sqs_message_data(sqs_body: Dict) -> List[WorkoutLink]:
         )
         for message in messages
     ]
-
-    print(f"Found {len(workout_links)} workout links")
-
-    return workout_links
+    return workout_link_messages
 
 
 def get_sqs() -> StandardSQS:
     """
-    Connects to the WorkoutLink SQS queue.
+    Connects to the WorkoutLinkMessage SQS queue.
     Returns:
         StandardSQS: StandardSQS object
     """
@@ -137,19 +135,20 @@ def handler(event, context):
         context (Dict): context object
     """
 
-    s3_client = get_s3_connection()
     print(
-        f"Received event SQS event RequestId: {event['ResponseMetadata']['RequestId']}'"
+        f"Received SQS event RequestId: {event['ResponseMetadata']['RequestId']}'"
     )
-    workout_links = parse_sqs_message_data(event)
+    s3_client = get_s3_connection()
+    workout_link_messages = parse_sqs_message_data(event)
     scraped_workouts = scrape_workouts(
-        workout_links=workout_links,
+        workout_link_messages=workout_link_messages,
         queue=get_sqs(),
     )
 
-    print("Uploading scraped workouts to s3")
+    file_name = f"{uuid4().__str__()}.json"
+    print(f"Uploading scraped workouts to s3 under file name: '{file_name}'")
     s3_client.put_object(
         Bucket=os.getenv("S3_BUCKET_NAME"),
-        Key=f"{uuid4().__str__()}.json",
+        Key=file_name,
         Body=scraped_workouts,
     )

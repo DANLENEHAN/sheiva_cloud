@@ -135,9 +135,7 @@ def handler(event, context):
         context (Dict): context object
     """
 
-    print(
-        f"Received SQS event RequestId: {event['ResponseMetadata']['RequestId']}'"
-    )
+    print("Received SQS event")
     s3_client = get_s3_connection()
     workout_link_messages = parse_sqs_message_data(event)
     scraped_workouts = scrape_workouts(

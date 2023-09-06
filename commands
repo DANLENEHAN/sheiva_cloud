@@ -39,6 +39,6 @@ docker push 381528172721.dkr.ecr.eu-west-1.amazonaws.com/kuda:latest
 docker tag kuda:workout_scraper:latest
 
 # Authenticate your Docker account with kuda ECR repo
-aws ecr get-login-password --region eu-west-1 | docker login --username dlengine --password-stdin 381528172721.dkr.ecr.eu-west-1.amazonaws.com/kuda
+aws ecr get-login-password --region eu-west-1 | docker login --username dlengine --password-stdin 381528172721.dkr.ecr.eu-west-1.amazonaws.com
 
 #### END ####

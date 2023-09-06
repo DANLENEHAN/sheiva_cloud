@@ -112,18 +112,21 @@ def get_sqs() -> StandardSQS:
     return queue
 
 
-def get_s3_connection() -> boto3.client:
+def get_s3_connection(bucket_name: str) -> boto3.client:
     """
     Connects to the S3 bucket.
     Returns:
         boto3.client: boto3 client object
     """
 
+    print(f"Connecting to S3 bucket: '{bucket_name}'")
     s3_client = boto3.Session().client("s3")
     try:
-        s3_client.list_objects_v2(Bucket=os.getenv("S3_BUCKET_NAME"))
+        s3_client.list_objects_v2(Bucket=bucket_name)
     except Exception as exp:
-        raise ("Critical error: unable to connect to S3 bucket")
+        raise (
+            f"Critical error: unable to connect to S3 bucket {bucket_name} with exception: {exp.__repr__()}"
+        )
     return s3_client
 
 
@@ -136,7 +139,8 @@ def handler(event, context):
     """
 
     print("Received SQS event")
-    s3_client = get_s3_connection()
+    bucket_name = os.getenv("S3_BUCKET_NAME")
+    s3_client = get_s3_connection(bucket_name=bucket_name)
     workout_link_messages = parse_sqs_message_data(event)
     scraped_workouts = scrape_workouts(
         workout_link_messages=workout_link_messages,
@@ -146,7 +150,7 @@ def handler(event, context):
     file_name = f"{uuid4().__str__()}.json"
     print(f"Uploading scraped workouts to s3 under file name: '{file_name}'")
     s3_client.put_object(
-        Bucket=os.getenv("S3_BUCKET_NAME"),
+        Bucket=bucket_name,
         Key=file_name,
         Body=scraped_workouts,
     )

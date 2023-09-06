@@ -5,6 +5,7 @@ Requires the following environment variables:
     - S3_BUCKET_NAME: name of the s3 bucket
 """
 
+import json
 import os
 from typing import Dict, List, TypedDict
 from uuid import uuid4
@@ -126,7 +127,7 @@ def get_s3_connection(bucket_name: str) -> boto3.client:
     try:
         s3_client.list_objects_v2(Bucket=bucket_name)
     except Exception as exp:
-        raise (
+        raise Exception(
             f"Critical error: unable to connect to S3 bucket {bucket_name} with exception: {exp.__repr__()}"
         )
     return s3_client
@@ -154,5 +155,5 @@ def handler(event, context):
     s3_client.put_object(
         Bucket=bucket_name,
         Key=file_name,
-        Body=scraped_workouts,
+        Body=json.dumps(scraped_workouts, indent=4),
     )

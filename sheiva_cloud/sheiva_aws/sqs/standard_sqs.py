@@ -5,10 +5,10 @@ This is a 'Standard SQS queue (not FIFO)'. This means that
 messages are not guaranteed to be delivered in the order they
 are sent. If this queue has a dead letter queue (DLQ) attached
 after the number of retries is exceeded, the message will be
-sent to the DLQ. Unfortunately, the minimum number of retries
-is 1 which actually means that the message will be sent to the
-DLQ after the second attempt. This is because the first attempt
-is the initial attempt and the second attempt is the first retry.
+sent to the DLQ. One of the benefits of using Standard SQS as
+a lambda trigger is that you can batch up to 10,000 for standard
+queues and 10 only for FIFO queues. You also don't need to worry
+about message deduplication.
 """
 
 from typing import Dict, Optional
@@ -16,9 +16,9 @@ from typing import Dict, Optional
 import boto3
 
 
-class SimpleSQS:
+class StandardSQS:
     """
-    Class for interacting with Simple Queue Service (SQS).
+    Class for interacting with Standard Queue Service (SQS).
     """
 
     def __init__(
@@ -26,7 +26,7 @@ class SimpleSQS:
         queue_url: str,
         boto3_session: Optional[boto3.Session] = None,
     ):
-        self.sqs_session = boto3_session or boto3.Session().client("sqs")
+        self.sqs_session = (boto3_session or boto3.Session()).client("sqs")
         self.queue_url = queue_url
 
     def send_message(

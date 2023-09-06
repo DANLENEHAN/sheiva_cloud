@@ -119,7 +119,7 @@ def get_s3_connection() -> boto3.client:
         boto3.client: boto3 client object
     """
 
-    s3_client = boto3.client("s3")
+    s3_client = boto3.Session().client("s3")
     try:
         s3_client.list_objects_v2(Bucket=os.getenv("S3_BUCKET_NAME"))
     except Exception as exp:

@@ -37,7 +37,9 @@ def run_scraper(workout_link: str) -> Dict:
     try:
         return scrape_workout(workout_link)
     except Exception as e:
-        print("Exception caught: ", e.__repr__())
+        print(
+            f"Workout link: {workout_link} scrape exception caught: {e.__repr__()}"
+        )
         return {}
 
 

@@ -1,1 +1,1 @@
-WORKOUT_LINK_BUCKET = 'male-workout-links'
+SHEIVA_SCRAPED_DATA_BUCKET = "sheiva-scraped-data"

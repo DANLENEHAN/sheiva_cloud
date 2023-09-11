@@ -26,7 +26,7 @@ git push --tags
 And create a release with a tag
 
 # Build a lambda Dockerfile
-# kud:workout_scraper is REPOSITORY:TAG 
+# kud:workout_scraper is REPOSITORY:TAG
 docker build --platform linux/amd64 -t kuda:workout_scraper .
 
 # Can re-tag to ECR repo

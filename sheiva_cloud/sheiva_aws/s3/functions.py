@@ -21,3 +21,4 @@ def check_bucket_exists(s3_client: boto3.client, bucket_name: str):
         raise Exception(
             f"Critical error: unable to connect to S3 bucket {bucket_name} with exception: {exp.__repr__()}"
         )
+    print(f"S3 bucket: '{bucket_name}' exists")

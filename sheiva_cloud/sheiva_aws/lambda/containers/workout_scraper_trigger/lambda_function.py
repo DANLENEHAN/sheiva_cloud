@@ -61,7 +61,7 @@ def get_workout_link_bucket_dirs(s3_client: boto3.client) -> List:
 
 
 def send_workout_links_to_queue(
-    workout_links: List, age_group: str, workout_link_queue: boto3.resource
+    workout_links: List, age_group_bucket_folder: str, workout_link_queue: boto3.resource
 ) -> None:
     """
     Sends workout links to the workout link queue.
@@ -71,13 +71,13 @@ def send_workout_links_to_queue(
     """
 
     print(
-        f"Sending {len(workout_links)} workout links age_group: '{age_group}' to queue"
+        f"Sending {len(workout_links)} workout links age_group_bucket_folder: '{age_group_bucket_folder}' to queue"
     )
     for workout_link in workout_links:
         workout_link_queue.send_message(
             MessageBody=workout_link,
             message_attributes={
-                "age_group": {"StringValue": age_group, "DataType": "String"}
+                "age_group_bucket_folder": {"StringValue": age_group_bucket_folder, "DataType": "String"}
             },
         )
 
@@ -111,7 +111,7 @@ def get_and_post_workout_links(
         print(f"Sending {len(workout_links)} workout links to queue")
         send_workout_links_to_queue(
             workout_links=workout_links,
-            age_group=bucket_dir.split("/")[-1].split(".")[0],
+            age_group_bucket_folder=bucket_dir.split("/")[-1].split(".")[0],
             workout_link_queue=workout_link_queue,
         )
         print(f"Deleting {len(workout_links)} workout links from bucket")

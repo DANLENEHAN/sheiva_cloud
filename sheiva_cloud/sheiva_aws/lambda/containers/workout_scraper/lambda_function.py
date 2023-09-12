@@ -33,12 +33,12 @@ class WorkoutLinkMessage(TypedDict):
     Workout link object.
     workout_link: The link to the workout
     receipt_handle: The receipt handle of the SQS message
-    age_group_bucket_dir: The bucket the workout link should be stored
+    age_group_bucket_folder: The bucket the workout link should be stored
     """
 
     workout_link: str
     receipt_handle: str
-    age_group_bucket_dir: str
+    age_group_bucket_folder: str
 
 
 def run_scraper(workout_link: str) -> Dict:
@@ -71,14 +71,14 @@ def scrape_workouts(
         queue (StandardSQS): StandardSQS object
     """
 
-    age_group_bucket_dir_dict = defaultdict(list)
+    age_group_bucket_folder_dict = defaultdict(list)
     for message in workout_link_messages:
         workout_link = message["workout_link"]
         print(f"Attempting to scrape '{workout_link}'")
         workout_data = run_scraper(workout_link)
         if workout_data:
             print(f"Workout scrape of '{workout_link}' successful")
-            age_group_bucket_dir_dict[message["age_group_bucket_dir"]].append(
+            age_group_bucket_folder_dict[message["age_group_bucket_folder"]].append(
                 workout_data
             )
             queue.delete_message(receipt_handle=message["receipt_handle"])
@@ -88,7 +88,7 @@ def scrape_workouts(
             )
 
     print("Finished scraping workouts")
-    return age_group_bucket_dir_dict
+    return age_group_bucket_folder_dict
 
 
 def parse_sqs_workout_link_message(message: Dict) -> WorkoutLinkMessage:
@@ -96,8 +96,8 @@ def parse_sqs_workout_link_message(message: Dict) -> WorkoutLinkMessage:
         {
             "workout_link": message["body"],
             "receipt_handle": message["receiptHandle"],
-            "age_group_bucket_dir": message["messageAttributes"][
-                "age_group_bucket_dir"
+            "age_group_bucket_folder": message["messageAttributes"][
+                "age_group_bucket_folder"
             ]["stringValue"],
         }
     )
@@ -105,19 +105,19 @@ def parse_sqs_workout_link_message(message: Dict) -> WorkoutLinkMessage:
 
 def store_workout_data(
     s3_client: boto3.client,
-    age_group_bucket_dir_dict: Dict[str, List[Dict]],
+    age_group_bucket_folder_dict: Dict[str, List[Dict]],
     sheiva_scrape_bucket: str,
 ) -> None:
     """
     Uploads scraped workout data to s3.
     Args:
         s3_client (boto3.client): boto3 client object
-        age_group_bucket_dir_dict (Dict[str, List[Dict]]): dict of age group buckets
+        age_group_bucket_folder_dict (Dict[str, List[Dict]]): dict of age group buckets
         sheiva_scrape_bucket (str): name of the s3 bucket
     """
 
     print(f"Uploading scraped workouts to s3")
-    for age_group_dir, workouts in age_group_bucket_dir_dict.items():
+    for age_group_dir, workouts in age_group_bucket_folder_dict.items():
         file_name = f"workout-data/{age_group_dir}/{uuid4().__str__()}.json"
         print(
             f"Uploading {len(workouts)} workouts to '{sheiva_scrape_bucket}/{file_name}'"
@@ -145,14 +145,14 @@ def handler(event, context):
     workout_link_messages = parse_sqs_message_data(
         sqs_body=event, parse_function=parse_sqs_workout_link_message
     )
-    age_group_bucket_dir_dict = scrape_workouts(
+    age_group_bucket_folder_dict = scrape_workouts(
         workout_link_messages=workout_link_messages,
         queue=queue,
     )
 
     store_workout_data(
         s3_client=s3_client,
-        age_group_bucket_dir_dict=age_group_bucket_dir_dict,
+        age_group_bucket_folder_dict=age_group_bucket_folder_dict,
         sheiva_scrape_bucket=SHEIVA_SCRAPE_BUCKET,
     )
 

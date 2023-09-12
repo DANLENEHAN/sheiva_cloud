@@ -76,7 +76,7 @@ def send_workout_links_to_queue(
     )
     for workout_link in workout_links:
         workout_link_queue.send_message(
-            MessageBody=workout_link,
+            message_body=workout_link,
             message_attributes={
                 "age_group_bucket_folder": {
                     "StringValue": age_group_bucket_folder,
@@ -100,18 +100,16 @@ def get_and_post_workout_links(
         s3_client (boto3.client): s3 client
         workout_link_queue (boto3.resource): workout link queue
         workout_link_bucket_dirs (List): list of workout link bucket dirs
-        num_workout_links_to_scrape (int): number of workout links to scrape
+        num_workout_links_to_scrape (int): number of workout links to scrape per age group
     """
 
-    num_buckets = len(workout_link_bucket_dirs)
-    num_workout_links_per_bucket = num_workout_links_to_scrape // num_buckets
     for bucket_dir in workout_link_bucket_dirs:
         print(f"Getting workout links from bucket: {bucket_dir}")
         bucket = s3_client.get_object(
             Bucket=SHEIVA_SCRAPE_BUCKET, Key=bucket_dir
         )
         bucket_contents = json.loads(bucket["Body"].read().decode("utf-8"))
-        workout_links = bucket_contents[:num_workout_links_per_bucket]
+        workout_links = bucket_contents[:num_workout_links_to_scrape]
         print(f"Sending {len(workout_links)} workout links to queue")
         send_workout_links_to_queue(
             workout_links=workout_links,
@@ -119,7 +117,7 @@ def get_and_post_workout_links(
             workout_link_queue=workout_link_queue,
         )
         print(f"Deleting {len(workout_links)} workout links from bucket")
-        bucket_contents = bucket_contents[num_workout_links_per_bucket:]
+        bucket_contents = bucket_contents[num_workout_links_to_scrape:]
         s3_client.put_object(
             Bucket=SHEIVA_SCRAPE_BUCKET,
             Key=bucket_dir,

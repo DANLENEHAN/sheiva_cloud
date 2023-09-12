@@ -1,7 +1,5 @@
 import boto3
 
-from sheiva_cloud.sheiva_aws import get_boto3_session
-
 
 def get_s3_client() -> boto3.client:
     """
@@ -10,7 +8,7 @@ def get_s3_client() -> boto3.client:
         boto3.client: boto3 client object
     """
     print("Connecting to SQS")
-    return get_boto3_session().client("s3")
+    return boto3.Session().client("s3")
 
 
 def check_bucket_exists(s3_client: boto3.client, bucket_name: str):

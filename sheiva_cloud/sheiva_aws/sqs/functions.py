@@ -1,6 +1,7 @@
 from typing import Callable, Dict, List
 
-from sheiva_cloud.sheiva_aws import get_boto3_session
+import boto3
+
 from sheiva_cloud.sheiva_aws.sqs.standard_sqs import StandardSQS
 
 
@@ -13,7 +14,7 @@ def get_sqs_queue(queue_name: str) -> StandardSQS:
 
     print(f"Connecting to SQS queue, url: '{queue_name}'")
     queue = StandardSQS(
-        boto3_session=get_boto3_session(),
+        boto3_session=boto3.Session(),
         queue_url=queue_name,
     )
     return queue

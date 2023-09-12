@@ -15,8 +15,6 @@ from typing import Dict, Optional
 
 import boto3
 
-from sheiva_cloud.sheiva_aws import get_boto3_session
-
 
 class StandardSQS:
     """
@@ -28,7 +26,7 @@ class StandardSQS:
         queue_url: str,
         boto3_session: Optional[boto3.Session] = None,
     ):
-        self.sqs_session = (boto3_session or get_boto3_session()).client("sqs")
+        self.sqs_session = (boto3_session or boto3.Session()).client("sqs")
         self.queue_url = queue_url
 
     def send_message(

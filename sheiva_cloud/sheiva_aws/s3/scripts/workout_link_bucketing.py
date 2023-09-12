@@ -12,11 +12,10 @@ import json
 from sheiva_cloud.sheiva_aws.s3 import (
     SHEIVA_SCRAPED_DATA_BUCKET as bucket_name,
 )
-from sheiva_cloud.sheiva_aws import get_boto3_session
 
 workout_link_dir = "user-data/user-workout-links"
 
-boto3_session = get_boto3_session()
+boto3_session = boto3.Session()
 s3_client = boto3_session.client("s3")
 
 

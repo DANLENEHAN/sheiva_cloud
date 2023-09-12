@@ -14,7 +14,18 @@ from uuid import uuid4
 import boto3
 from kuda.scrapers import scrape_workout
 
+from sheiva_cloud.sheiva_aws.s3.functions import (
+    get_s3_client,
+    check_bucket_exists,
+)
+from sheiva_cloud.sheiva_aws.sqs.functions import (
+    get_sqs_queue,
+    parse_sqs_message_data,
+)
 from sheiva_cloud.sheiva_aws.sqs.standard_sqs import StandardSQS
+
+WORKOUTLINK_QUEUE_URL = os.getenv("WORKOUTLINK_QUEUE_URL", "")
+SHEIVA_BUCKET = os.getenv("SHEIVA_BUCKET", "")
 
 
 class WorkoutLinkMessage(TypedDict):
@@ -80,73 +91,16 @@ def scrape_workouts(
     return age_group_bucket_dir_dict
 
 
-def parse_sqs_message_data(sqs_body: Dict) -> List[WorkoutLinkMessage]:
-    """
-    Takes SQS message event and extracts all the message bodies
-    into a list.
-    Args:
-        sqs_body (Dict): body of SQS message
-    Returns:
-        List[WorkoutLinkMessage]: list of workout link messages
-    """
-    messages = sqs_body["Records"]
-
-    print(
-        f"Parsing {len(messages)} batched message{'s' if len(messages) > 1 else ''}"
+def parse_sqs_workout_link_message(message: Dict) -> WorkoutLinkMessage:
+    return WorkoutLinkMessage(
+        {
+            "workout_link": message["body"],
+            "receipt_handle": message["receiptHandle"],
+            "age_group_bucket_dir": message["messageAttributes"][
+                "age_group_bucket_dir"
+            ]["stringValue"],
+        }
     )
-
-    workout_link_messages = []
-    for message in messages:
-        try:
-            workout_link_messages.append(
-                WorkoutLinkMessage(
-                    {
-                        "workout_link": message["body"],
-                        "receipt_handle": message["receiptHandle"],
-                        "age_group_bucket_dir": message["messageAttributes"][
-                            "age_group_bucket_dir"
-                        ]["stringValue"],
-                    }
-                )
-            )
-        except Exception as e:
-            print(
-                f"Error parsing message: {message} with exception: {e.__repr__()}"
-            )
-    return workout_link_messages
-
-
-def get_sqs() -> StandardSQS:
-    """
-    Connects to the WorkoutLinkMessage SQS queue.
-    Returns:
-        StandardSQS: StandardSQS object
-    """
-
-    print("Connecting to SQS")
-    queue = StandardSQS(
-        boto3_session=boto3.Session(),
-        queue_url=os.getenv("WORKOUTLINK_QUEUE_URL", ""),
-    )
-    return queue
-
-
-def get_s3_connection(bucket_name: str) -> boto3.client:
-    """
-    Connects to the S3 bucket.
-    Returns:
-        boto3.client: boto3 client object
-    """
-
-    print(f"Connecting to S3 bucket: '{bucket_name}'")
-    s3_client = boto3.Session().client("s3")
-    try:
-        s3_client.list_objects_v2(Bucket=bucket_name)
-    except Exception as exp:
-        raise Exception(
-            f"Critical error: unable to connect to S3 bucket {bucket_name} with exception: {exp.__repr__()}"
-        )
-    return s3_client
 
 
 def store_workout_data(
@@ -184,11 +138,13 @@ def handler(event, context):
     """
 
     print("Received SQS event")
-    sheiva_bucket = os.getenv("SHEIVA_BUCKET")
-    s3_client = get_s3_connection(bucket_name=sheiva_bucket)
-    queue = get_sqs()
+    s3_client = get_s3_client()
+    check_bucket_exists(s3_client=s3_client, bucket_name=SHEIVA_BUCKET)
+    queue = get_sqs_queue(queue_name=WORKOUTLINK_QUEUE_URL)
 
-    workout_link_messages = parse_sqs_message_data(event)
+    workout_link_messages = parse_sqs_message_data(
+        sqs_body=event, parse_function=parse_sqs_workout_link_message
+    )
     age_group_bucket_dir_dict = scrape_workouts(
         workout_link_messages=workout_link_messages,
         queue=queue,
@@ -197,7 +153,7 @@ def handler(event, context):
     store_workout_data(
         s3_client=s3_client,
         age_group_bucket_dir_dict=age_group_bucket_dir_dict,
-        sheiva_bucket=sheiva_bucket,
+        sheiva_bucket=SHEIVA_BUCKET,
     )
 
     print("Lambda function complete")

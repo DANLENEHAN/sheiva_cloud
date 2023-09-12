@@ -2,7 +2,7 @@
 Lambda function for scraping workout links.
 Requires the following environment variables:
     - WORKOUTLINK_QUEUE_URL: url of the workout link SQS queue
-    - SHEIVA_BUCKET: name of the s3 sheiva bucket
+    - SHEIVA_SCRAPE_BUCKET: name of the s3 sheiva bucket
 """
 
 import json
@@ -25,7 +25,7 @@ from sheiva_cloud.sheiva_aws.sqs.functions import (
 from sheiva_cloud.sheiva_aws.sqs.standard_sqs import StandardSQS
 
 WORKOUTLINK_QUEUE_URL = os.getenv("WORKOUTLINK_QUEUE_URL", "")
-SHEIVA_BUCKET = os.getenv("SHEIVA_BUCKET", "")
+SHEIVA_SCRAPE_BUCKET = os.getenv("SHEIVA_SCRAPE_BUCKET", "")
 
 
 class WorkoutLinkMessage(TypedDict):
@@ -106,24 +106,24 @@ def parse_sqs_workout_link_message(message: Dict) -> WorkoutLinkMessage:
 def store_workout_data(
     s3_client: boto3.client,
     age_group_bucket_dir_dict: Dict[str, List[Dict]],
-    sheiva_bucket: str,
+    sheiva_scrape_bucket: str,
 ) -> None:
     """
     Uploads scraped workout data to s3.
     Args:
         s3_client (boto3.client): boto3 client object
         age_group_bucket_dir_dict (Dict[str, List[Dict]]): dict of age group buckets
-        sheiva_bucket (str): name of the s3 bucket
+        sheiva_scrape_bucket (str): name of the s3 bucket
     """
 
     print(f"Uploading scraped workouts to s3")
     for age_group_dir, workouts in age_group_bucket_dir_dict.items():
         file_name = f"workout-data/{age_group_dir}/{uuid4().__str__()}.json"
         print(
-            f"Uploading {len(workouts)} workouts to '{sheiva_bucket}/{file_name}'"
+            f"Uploading {len(workouts)} workouts to '{sheiva_scrape_bucket}/{file_name}'"
         )
         s3_client.put_object(
-            Bucket=sheiva_bucket,
+            Bucket=sheiva_scrape_bucket,
             Key=file_name,
             Body=json.dumps(workouts, indent=4),
         )
@@ -139,7 +139,7 @@ def handler(event, context):
 
     print("Received SQS event")
     s3_client = get_s3_client()
-    check_bucket_exists(s3_client=s3_client, bucket_name=SHEIVA_BUCKET)
+    check_bucket_exists(s3_client=s3_client, bucket_name=SHEIVA_SCRAPE_BUCKET)
     queue = get_sqs_queue(queue_name=WORKOUTLINK_QUEUE_URL)
 
     workout_link_messages = parse_sqs_message_data(
@@ -153,7 +153,7 @@ def handler(event, context):
     store_workout_data(
         s3_client=s3_client,
         age_group_bucket_dir_dict=age_group_bucket_dir_dict,
-        sheiva_bucket=SHEIVA_BUCKET,
+        sheiva_scrape_bucket=SHEIVA_SCRAPE_BUCKET,
     )
 
     print("Lambda function complete")

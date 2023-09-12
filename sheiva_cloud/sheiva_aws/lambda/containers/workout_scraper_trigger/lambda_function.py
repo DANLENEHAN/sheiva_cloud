@@ -18,7 +18,7 @@ TODO:
 
 """
 
-from typing import Dict, List
+from typing import Dict
 import os
 
 from sheiva_cloud.sheiva_aws.s3.functions import (
@@ -31,7 +31,7 @@ from sheiva_cloud.sheiva_aws.sqs.functions import (
 )
 
 WORKOUTLINK_QUEUE_URL = os.getenv("WORKOUTLINK_QUEUE_URL", "")
-SHEIVA_BUCKET = os.getenv("SHEIVA_BUCKET", "")
+SHEIVA_SCRAPE_BUCKET = os.getenv("SHEIVA_SCRAPE_BUCKET", "")
 WORKOUT_SCRAPE_TRIGGER_QUEUE = os.getenv("WORKOUT_SCRAPE_TRIGGER_QUEUE", "")
 
 
@@ -62,7 +62,7 @@ def handler(event, context):
     print("Received SQS event")
     s3_client = get_s3_client()
 
-    check_bucket_exists(s3_client=s3_client, bucket_name=SHEIVA_BUCKET)
+    check_bucket_exists(s3_client=s3_client, bucket_name=SHEIVA_SCRAPE_BUCKET)
     workout_link_queue = get_sqs_queue(WORKOUTLINK_QUEUE_URL)
 
     workout_scrape_trigger_messages = parse_sqs_message_data(

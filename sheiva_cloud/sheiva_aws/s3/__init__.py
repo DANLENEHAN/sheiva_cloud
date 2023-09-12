@@ -1,1 +1,1 @@
-SHEIVA_SCRAPED_DATA_BUCKET = "sheiva-scraped-data"
+SHEIVA_SCRAPE_BUCKET = "sheiva-scraped-data"

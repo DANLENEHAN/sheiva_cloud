@@ -24,7 +24,7 @@ WORKOUT_SCRAPE_TRIGGER_QUEUE_URL = os.getenv(
 )
 
 
-def parse_workout_scrape_trigger_message(message: Dict) -> Tuple(int, str):
+def parse_workout_scrape_trigger_message(message: Dict) -> Tuple[int, str]:
     """
     Parses the workout scrape trigger message.
     Args:

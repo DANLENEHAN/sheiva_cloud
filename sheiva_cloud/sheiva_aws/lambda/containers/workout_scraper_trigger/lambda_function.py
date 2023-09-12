@@ -2,7 +2,7 @@
 Lambda function for putting workout links into the workout link queue.
 Requires the following environment variables:
     - WORKOUTLINK_QUEUE_URL
-    - WORKOUT_SCRAPE_TRIGGER_QUEUE: url of the workout link SQS queue
+    - WORKOUT_SCRAPE_TRIGGER_QUEUE_URL: url of the workout link SQS queue
     - WORKOUT_LINKS_BUCKET: name of the s3 bucket
 """
 
@@ -22,7 +22,7 @@ from sheiva_cloud.sheiva_aws.sqs.functions import (
 
 WORKOUTLINK_QUEUE_URL = os.getenv("WORKOUTLINK_QUEUE_URL", "")
 SHEIVA_SCRAPE_BUCKET = os.getenv("SHEIVA_SCRAPE_BUCKET", "")
-WORKOUT_SCRAPE_TRIGGER_QUEUE = os.getenv("WORKOUT_SCRAPE_TRIGGER_QUEUE", "")
+WORKOUT_SCRAPE_TRIGGER_QUEUE_URL = os.getenv("WORKOUT_SCRAPE_TRIGGER_QUEUE_URL", "")
 
 
 def parse_workout_scrape_trigger_message(message: Dict) -> Tuple(int, str):
@@ -34,6 +34,7 @@ def parse_workout_scrape_trigger_message(message: Dict) -> Tuple(int, str):
         int: number of workout links to scrape
     """
 
+    print("Parsing workout scrape trigger message")
     try:
         return (int(message["Body"]), message["ReceiptHandle"])
     except Exception as e:
@@ -48,6 +49,7 @@ def get_workout_link_bucket_dirs(s3_client: boto3.client) -> List:
         List: list of workout link buckets dirs.
     """
 
+    print("Getting workout link bucket dirs")
     paginator = s3_client.get_paginator("list_objects_v2")
     page_iterator = paginator.paginate(Bucket=SHEIVA_SCRAPE_BUCKET)
     return [
@@ -158,7 +160,7 @@ def handler(event, context):
     )
 
     print("Deleting workout scrape trigger message")
-    workout_trigger_scrape_queue = get_sqs_queue(WORKOUT_SCRAPE_TRIGGER_QUEUE)
+    workout_trigger_scrape_queue = get_sqs_queue(WORKOUT_SCRAPE_TRIGGER_QUEUE_URL)
     workout_trigger_scrape_queue.delete_message(receipt_handle=receipt_handle)
 
     print("Finished scraping workout links")

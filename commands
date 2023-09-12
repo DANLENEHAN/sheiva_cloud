@@ -25,20 +25,19 @@ git push --tags
 # Go to https://github.com/{username}/{project}/releases
 And create a release with a tag
 
-# Build a lambda Dockerfile
-# kud:workout_scraper is REPOSITORY:TAG
-docker build --platform linux/amd64 -t kuda:workout_scraper .
-
-# Can re-tag to ECR repo
-docker tag kuda:workout_scraper 381528172721.dkr.ecr.eu-west-1.amazonaws.com/kuda:latest
-
-# Push image to ECR repo
-docker push 381528172721.dkr.ecr.eu-west-1.amazonaws.com/kuda:latest
-
-# Tag the image
-docker tag kuda:workout_scraper:latest
+## Build a lambda Dockerfile ##
 
 # Authenticate your Docker account with kuda ECR repo
-aws ecr get-login-password --region eu-west-1 | docker login --username dlengine --password-stdin 381528172721.dkr.ecr.eu-west-1.amazonaws.com
+aws ecr get-login-password --region eu-west-1 | docker login --username AWS --password-stdin 381528172721.dkr.ecr.eu-west-1.amazonaws.com
+
+# kud:workout_scraper is REPOSITORY:TAG
+docker build --platform linux/amd64 -t 381528172721.dkr.ecr.eu-west-1.amazonaws.com/kuda:workout_scraper-latest sheiva_cloud/sheiva_aws/lambda/containers/workout_scraper
+
+docker build --platform linux/amd64 -t 381528172721.dkr.ecr.eu-west-1.amazonaws.com/kuda:workout_scraper_trigger-latest sheiva_cloud/sheiva_aws/lambda/containers/workout_scraper_trigger
+
+# Push image to ECR repo
+docker push 381528172721.dkr.ecr.eu-west-1.amazonaws.com/kuda:workout_scraper-latest
+
+docker push 381528172721.dkr.ecr.eu-west-1.amazonaws.com/kuda:workout_scraper_trigger-latest
 
 #### END ####

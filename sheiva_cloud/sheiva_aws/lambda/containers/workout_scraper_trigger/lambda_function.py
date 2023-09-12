@@ -11,10 +11,7 @@ import os
 import json
 import boto3
 
-from sheiva_cloud.sheiva_aws.s3.functions import (
-    get_s3_client,
-    check_bucket_exists,
-)
+from sheiva_cloud.sheiva_aws.s3.functions import check_bucket_exists
 from sheiva_cloud.sheiva_aws.sqs.functions import (
     get_sqs_queue,
     parse_sqs_message_data,
@@ -65,13 +62,13 @@ def get_workout_link_bucket_dirs(s3_client: boto3.client) -> List:
 def send_workout_links_to_queue(
     workout_links: List,
     age_group_bucket_folder: str,
-    workout_link_queue: boto3.resource,
+    workout_link_queue: boto3.client,
 ) -> None:
     """
     Sends workout links to the workout link queue.
     Args:
         workout_links (List): list of workout links
-        workout_link_queue (boto3.resource): workout link queue
+        workout_link_queue (boto3.client): workout link queue
     """
 
     print(
@@ -141,10 +138,13 @@ def handler(event, context):
     """
 
     print("Received SQS event")
-    s3_client = get_s3_client()
+    boto3_session = boto3.Session()
+    s3_client = boto3_session.client("s3")
 
     check_bucket_exists(s3_client=s3_client, bucket_name=SHEIVA_SCRAPE_BUCKET)
-    workout_link_queue = get_sqs_queue(WORKOUTLINK_QUEUE_URL)
+    workout_link_queue = get_sqs_queue(
+        WORKOUTLINK_QUEUE_URL, boto3_session=boto3_session
+    )
 
     workout_scrape_trigger_messages = parse_sqs_message_data(
         sqs_body=event, parse_function=parse_workout_scrape_trigger_message
@@ -168,7 +168,7 @@ def handler(event, context):
 
     print("Deleting workout scrape trigger message")
     workout_trigger_scrape_queue = get_sqs_queue(
-        WORKOUT_SCRAPE_TRIGGER_QUEUE_URL
+        WORKOUT_SCRAPE_TRIGGER_QUEUE_URL, boto3_session=boto3_session
     )
     workout_trigger_scrape_queue.delete_message(receipt_handle=receipt_handle)
 

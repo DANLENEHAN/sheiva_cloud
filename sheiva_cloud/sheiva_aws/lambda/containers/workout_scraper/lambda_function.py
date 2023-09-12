@@ -14,10 +14,7 @@ from uuid import uuid4
 import boto3
 from kuda.scrapers import scrape_workout
 
-from sheiva_cloud.sheiva_aws.s3.functions import (
-    get_s3_client,
-    check_bucket_exists,
-)
+from sheiva_cloud.sheiva_aws.s3.functions import check_bucket_exists
 from sheiva_cloud.sheiva_aws.sqs.functions import (
     get_sqs_queue,
     parse_sqs_message_data,
@@ -138,9 +135,12 @@ def handler(event, context):
     """
 
     print("Received SQS event")
-    s3_client = get_s3_client()
+    boto3_session = boto3.Session()
+    s3_client = boto3_session.client("s3")
     check_bucket_exists(s3_client=s3_client, bucket_name=SHEIVA_SCRAPE_BUCKET)
-    queue = get_sqs_queue(queue_name=WORKOUTLINK_QUEUE_URL)
+    queue = get_sqs_queue(
+        queue_name=WORKOUTLINK_QUEUE_URL, boto3_session=boto3_session
+    )
 
     workout_link_messages = parse_sqs_message_data(
         sqs_body=event, parse_function=parse_sqs_workout_link_message

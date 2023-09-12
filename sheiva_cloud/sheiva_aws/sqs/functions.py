@@ -5,7 +5,9 @@ import boto3
 from sheiva_cloud.sheiva_aws.sqs.standard_sqs import StandardSQS
 
 
-def get_sqs_queue(queue_name: str) -> StandardSQS:
+def get_sqs_queue(
+    queue_name: str, boto3_session: boto3.Session
+) -> StandardSQS:
     """
     Connects to the WorkoutLinkMessage SQS queue.
     Returns:
@@ -14,7 +16,7 @@ def get_sqs_queue(queue_name: str) -> StandardSQS:
 
     print(f"Connecting to SQS queue, url: '{queue_name}'")
     queue = StandardSQS(
-        boto3_session=boto3.Session(),
+        boto3_session=boto3_session,
         queue_url=queue_name,
     )
     return queue

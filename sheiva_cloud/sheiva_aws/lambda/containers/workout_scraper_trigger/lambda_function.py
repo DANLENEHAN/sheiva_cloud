@@ -22,7 +22,9 @@ from sheiva_cloud.sheiva_aws.sqs.functions import (
 
 WORKOUTLINK_QUEUE_URL = os.getenv("WORKOUTLINK_QUEUE_URL", "")
 SHEIVA_SCRAPE_BUCKET = os.getenv("SHEIVA_SCRAPE_BUCKET", "")
-WORKOUT_SCRAPE_TRIGGER_QUEUE_URL = os.getenv("WORKOUT_SCRAPE_TRIGGER_QUEUE_URL", "")
+WORKOUT_SCRAPE_TRIGGER_QUEUE_URL = os.getenv(
+    "WORKOUT_SCRAPE_TRIGGER_QUEUE_URL", ""
+)
 
 
 def parse_workout_scrape_trigger_message(message: Dict) -> Tuple(int, str):
@@ -61,7 +63,9 @@ def get_workout_link_bucket_dirs(s3_client: boto3.client) -> List:
 
 
 def send_workout_links_to_queue(
-    workout_links: List, age_group_bucket_folder: str, workout_link_queue: boto3.resource
+    workout_links: List,
+    age_group_bucket_folder: str,
+    workout_link_queue: boto3.resource,
 ) -> None:
     """
     Sends workout links to the workout link queue.
@@ -77,7 +81,10 @@ def send_workout_links_to_queue(
         workout_link_queue.send_message(
             MessageBody=workout_link,
             message_attributes={
-                "age_group_bucket_folder": {"StringValue": age_group_bucket_folder, "DataType": "String"}
+                "age_group_bucket_folder": {
+                    "StringValue": age_group_bucket_folder,
+                    "DataType": "String",
+                }
             },
         )
 
@@ -160,7 +167,9 @@ def handler(event, context):
     )
 
     print("Deleting workout scrape trigger message")
-    workout_trigger_scrape_queue = get_sqs_queue(WORKOUT_SCRAPE_TRIGGER_QUEUE_URL)
+    workout_trigger_scrape_queue = get_sqs_queue(
+        WORKOUT_SCRAPE_TRIGGER_QUEUE_URL
+    )
     workout_trigger_scrape_queue.delete_message(receipt_handle=receipt_handle)
 
     print("Finished scraping workout links")

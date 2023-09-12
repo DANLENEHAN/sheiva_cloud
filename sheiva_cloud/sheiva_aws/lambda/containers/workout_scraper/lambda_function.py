@@ -78,9 +78,9 @@ def scrape_workouts(
         workout_data = run_scraper(workout_link)
         if workout_data:
             print(f"Workout scrape of '{workout_link}' successful")
-            age_group_bucket_folder_dict[message["age_group_bucket_folder"]].append(
-                workout_data
-            )
+            age_group_bucket_folder_dict[
+                message["age_group_bucket_folder"]
+            ].append(workout_data)
             queue.delete_message(receipt_handle=message["receipt_handle"])
         else:
             print(

@@ -35,7 +35,7 @@ def parse_workout_scrape_trigger_message(message: Dict) -> Tuple[int, str]:
 
     print("Parsing workout scrape trigger message")
     try:
-        return int(message["Body"]), message["ReceiptHandle"]
+        return int(message["body"]), message["receiptHandle"]
     except Exception as e:
         print(f"Error parsing workout scrape trigger message: {e.__repr__()}")
         return 0, ""

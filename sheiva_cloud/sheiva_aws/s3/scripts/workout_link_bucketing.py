@@ -18,7 +18,7 @@ workout_link_dir = "user-data/user-workout-links"
 boto3_session = boto3.Session()
 s3_client = boto3_session.client("s3")
 
-# As of 11/09/2023 Male workout link counts
+# As of 13/09/2023 Male workout link counts
 original_bucket_numbers = {
     "age_16_20": 235803,
     "age_21_25": 1215559,

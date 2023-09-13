@@ -10,7 +10,7 @@ import boto3
 import json
 
 from sheiva_cloud.sheiva_aws.s3 import (
-    SHEIVA_SCRAPED_DATA_BUCKET as bucket_name,
+    SHEIVA_SCRAPE_BUCKET as bucket_name,
 )
 
 workout_link_dir = "user-data/user-workout-links"

@@ -4,13 +4,13 @@ workouts in each age group and also test for uniqueness of the workouts
 via the link.
 """
 
-from collections import defaultdict
-import boto3
 import json
+import sys
+from collections import defaultdict
 
-from sheiva_cloud.sheiva_aws.s3 import (
-    SHEIVA_SCRAPE_BUCKET as bucket_name,
-)
+import boto3
+
+from sheiva_cloud.sheiva_aws.s3 import SHEIVA_SCRAPE_BUCKET as bucket_name
 
 scraped_workouts_dir = "workout-data/"
 
@@ -23,7 +23,9 @@ page_iterator = paginator.paginate(Bucket=bucket_name)
 files = [
     f["Key"]
     for f in page_iterator.search(
-        f"Contents[?starts_with(Key, '{scraped_workouts_dir}') && ends_with(Key, '.json')]"
+        "Contents[?starts_with(Key, "
+        f"'{scraped_workouts_dir}') && "
+        "ends_with(Key, '.json')]"
     )
 ]
 
@@ -43,6 +45,7 @@ all_workouts = [
     for workout in workouts
 ]
 
+# pylint: disable=unreachable,no-else-continue,line-too-long
 for workout in all_workouts:
     if len(workout["workout_components"]) == 0:
         continue
@@ -59,21 +62,24 @@ for workout in all_workouts:
                     if len(set_["set_components"]) == 0:
                         continue
                         print(
-                            f"Workout {workout['url']} has set {set['name']} with no exercises"
+                            f"Workout {workout['url']} has set {set_['name']} with no exercises"
                         )
                     else:
                         for set_component in set_["set_components"]:
-                            if "exercise_name" not in set_component or not set_component["exercise_name"]:
+                            if (
+                                "exercise_name" not in set_component
+                                or not set_component["exercise_name"]
+                            ):
                                 print(
                                     f"Workout {workout['url']} has set {set_['name']} with invalid exercise name"
                                 )
-                    
+
 
 urls = [workout["url"] for workout in all_workouts]
 if len(urls) == len(set(urls)):
     print(f"No duplicates found in the {len(urls)} workouts")
     print("Exiting...")
-    exit(0)
+    sys.exit(0)
 
 
 # Removing duplicates

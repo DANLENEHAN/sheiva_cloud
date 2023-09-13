@@ -15,10 +15,7 @@ import boto3
 from kuda.scrapers import scrape_workout
 
 from sheiva_cloud.sheiva_aws.s3.functions import check_bucket_exists
-from sheiva_cloud.sheiva_aws.sqs.functions import (
-    get_sqs_queue,
-    parse_sqs_message_data,
-)
+from sheiva_cloud.sheiva_aws.sqs.functions import get_sqs_queue, parse_sqs_message_data
 from sheiva_cloud.sheiva_aws.sqs.standard_sqs import StandardSQS
 
 WORKOUTLINK_QUEUE_URL = os.getenv("WORKOUTLINK_QUEUE_URL", "")
@@ -50,9 +47,10 @@ def run_scraper(workout_link: str) -> Dict:
 
     try:
         return scrape_workout(workout_link)
+    # pylint: disable=broad-except
     except Exception as e:
         print(
-            f"Workout link: {workout_link} scrape exception caught: {e.__repr__()}"
+            f"Workout link: {workout_link} scrape exception caught: {repr(e)}"
         )
         return {}
 
@@ -64,7 +62,8 @@ def scrape_workouts(
     Scrapes all the workout links. Uploads any sucessful workouts to s3.
     Any unsuccessful workouts will be sent to the dead letter queue.
     Args:
-        workout_link_messages (List[WorkoutLinkMessage]): list of workout link objects
+        workout_link_messages (List[WorkoutLinkMessage]):
+            list of workout link objects
         queue (StandardSQS): StandardSQS object
     """
 
@@ -81,7 +80,8 @@ def scrape_workouts(
             queue.delete_message(receipt_handle=message["receipt_handle"])
         else:
             print(
-                f"Workout scrape of '{workout_link}' unsuccessful with be sent to dead letter queue"
+                f"Workout scrape of '{workout_link}' "
+                "unsuccessful with be sent to dead letter queue"
             )
 
     print("Finished scraping workouts")
@@ -89,6 +89,10 @@ def scrape_workouts(
 
 
 def parse_sqs_workout_link_message(message: Dict) -> WorkoutLinkMessage:
+    """
+    Parses the workout link message.
+    """
+
     return WorkoutLinkMessage(
         {
             "workout_link": message["body"],
@@ -109,15 +113,17 @@ def store_workout_data(
     Uploads scraped workout data to s3.
     Args:
         s3_client (boto3.client): boto3 client object
-        age_group_bucket_folder_dict (Dict[str, List[Dict]]): dict of age group buckets
+        age_group_bucket_folder_dict (Dict[str, List[Dict]]):
+            dict of age group buckets
         sheiva_scrape_bucket (str): name of the s3 bucket
     """
 
-    print(f"Uploading scraped workouts to s3")
+    print("Uploading scraped workouts to s3")
     for age_group_dir, workouts in age_group_bucket_folder_dict.items():
-        file_name = f"workout-data/{age_group_dir}/{uuid4().__str__()}.json"
+        file_name = f"workout-data/{age_group_dir}/{str(uuid4())}.json"
         print(
-            f"Uploading {len(workouts)} workouts to '{sheiva_scrape_bucket}/{file_name}'"
+            f"Uploading {len(workouts)} workouts to "
+            f"'{sheiva_scrape_bucket}/{file_name}'"
         )
         s3_client.put_object(
             Bucket=sheiva_scrape_bucket,
@@ -126,6 +132,7 @@ def store_workout_data(
         )
 
 
+# pylint: disable=unused-argument
 def handler(event, context):
     """
     Lambda handler for scraping workout links.

@@ -4,27 +4,53 @@ age buckets for the Kuda workout scraper. For local
 use only.
 """
 
-import os
-import pandas as pd
-import boto3
 import json
+from pprint import pprint
+from typing import Dict
 
-from sheiva_cloud.sheiva_aws.s3 import (
-    SHEIVA_SCRAPE_BUCKET as bucket_name,
-)
+import boto3
+import pandas as pd
+
+from sheiva_cloud.sheiva_aws.s3 import SHEIVA_SCRAPE_BUCKET as bucket_name
 
 workout_link_dir = "user-data/user-workout-links"
 
 boto3_session = boto3.Session()
 s3_client = boto3_session.client("s3")
 
+# As of 11/09/2023 Male workout link counts
+original_bucket_numbers = {
+    "age_16_20": 235803,
+    "age_21_25": 1215559,
+    "age_26_30": 2193858,
+    "age_31_35": 2197241,
+    "age_36_40": 2208600,
+    "age_41_45": 1220973,
+    "age_46_50": 120,
+    "age_51_55": 112032,
+    "age_56_60": 153941,
+    "age_61_65": 44694,
+    "age_66_70": 14560,
+    "age_71_75": 2225,
+    "age_76_80": 150,
+    "age_81_85": 51,
+    "age_86_90": 322,
+    "age_91_95": 229,
+    "age_96_100": 1016,
+}
+
 
 def get_all_workout_links() -> pd.DataFrame:
+    """
+    Retrieves all workout links from s3.
+    """
+
     res = s3_client.get_object(
         Bucket=bucket_name, Key=f"{workout_link_dir}/all_workout_links.csv"
     )
     print(
-        f"Retrieved all workout links from s3 bucket: {workout_link_dir}/all_workout_links.csv"
+        "Retrieved all workout links from s3 bucket: "
+        f"{workout_link_dir}/all_workout_links.csv"
     )
     csv_data = res["Body"].read().decode("utf-8")
     columns = csv_data.split("\n")[0].split("|")
@@ -32,16 +58,24 @@ def get_all_workout_links() -> pd.DataFrame:
     return pd.DataFrame(columns=columns, data=[d.split("|") for d in data])
 
 
-def bucket_data() -> None:
+def bucket_data() -> Dict:
+    """
+    Bucket the workout links into age groups of 5 years.
+    Note: between means inclusive of the bounds.
+    """
+
+    bucket_numbers_dict = {}
     pdf = get_all_workout_links()
     pdf.Age = pdf.Age.apply(lambda x: int(x) if x not in ["--", ""] else -1)
     for x in range(5, 101, 5):
-        print(f"Bucketing age {x - 5} to {x}")
+        group = f"age_{x - 4}_{x}"
+        print(f"Bucketing group: {group}")
         links = list(pdf[pdf.Age.between(x - 4, x)].Links)
         if links:
+            bucket_numbers_dict[f"{group}"] = len(links)
             s3_client.put_object(
                 Bucket=bucket_name,
-                Key=f"{workout_link_dir}/age_{x - 5}_{x}.json",
+                Key=f"{workout_link_dir}/{group}.json",
                 Body=json.dumps(links, indent=4),
             )
     links = list(pdf[pdf.Age == -1].Links)
@@ -50,7 +84,9 @@ def bucket_data() -> None:
         Key=f"{workout_link_dir}/age_unknown.json",
         Body=json.dumps(links, indent=4),
     )
+    return bucket_numbers_dict
 
 
 if __name__ == "__main__":
-    bucket_data()
+    response = bucket_data()
+    pprint(response)

@@ -6,16 +6,14 @@ Requires the following environment variables:
     - WORKOUT_LINKS_BUCKET: name of the s3 bucket
 """
 
-from typing import Dict, List, Tuple
-import os
 import json
+import os
+from typing import Dict, List, Tuple
+
 import boto3
 
 from sheiva_cloud.sheiva_aws.s3.functions import check_bucket_exists
-from sheiva_cloud.sheiva_aws.sqs.functions import (
-    get_sqs_queue,
-    parse_sqs_message_data,
-)
+from sheiva_cloud.sheiva_aws.sqs.functions import get_sqs_queue, parse_sqs_message_data
 
 WORKOUTLINK_QUEUE_URL = os.getenv("WORKOUTLINK_QUEUE_URL", "")
 SHEIVA_SCRAPE_BUCKET = os.getenv("SHEIVA_SCRAPE_BUCKET", "")
@@ -36,8 +34,9 @@ def parse_workout_scrape_trigger_message(message: Dict) -> Tuple[int, str]:
     print("Parsing workout scrape trigger message")
     try:
         return int(message["body"]), message["receiptHandle"]
+    # pylint: disable=broad-except
     except Exception as e:
-        print(f"Error parsing workout scrape trigger message: {e.__repr__()}")
+        print(f"Error parsing workout scrape trigger message: {repr(e)}")
         return 0, ""
 
 
@@ -63,11 +62,12 @@ def send_workout_links_to_queue(
     workout_links: List,
     age_group_bucket_folder: str,
     workout_link_queue: boto3.client,
-) -> None:
+) -> str:
     """
     Sends workout links to the workout link queue.
     Args:
         workout_links (List): list of workout links
+        age_group_bucket_folder (str): age group bucket folder
         workout_link_queue (boto3.client): workout link queue
     """
 
@@ -93,7 +93,7 @@ def get_and_post_workout_links(
     workout_link_queue: boto3.resource,
     workout_link_bucket_dirs: List,
     num_workout_links_to_scrape: int,
-) -> None:
+) -> str:
     """
     Gets and posts workout links to the workout link queue.
     Args:
@@ -127,6 +127,7 @@ def get_and_post_workout_links(
     return "Success"
 
 
+# pylint: disable=unused-argument
 def handler(event, context):
     """
     Lambda handler for scraping workout links.

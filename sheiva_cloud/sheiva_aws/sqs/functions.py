@@ -28,21 +28,25 @@ def parse_sqs_message_data(sqs_body: Dict, parse_function: Callable) -> List:
     into a parsed list.
     Args:
         sqs_body (Dict): body of SQS message
+        parse_function (Callable): function to parse message
     Returns:
         List: list of parsed messages
     """
     messages = sqs_body["Records"]
 
     print(
-        f"Parsing {len(messages)} batched message{'s' if len(messages) > 1 else ''}"
+        f"Parsing {len(messages)} batched message"
+        f"{'s' if len(messages) > 1 else ''}"
     )
 
     parsed_messages = []
     for message in messages:
         try:
             parsed_messages.append(parse_function(message))
+        # pylint: disable=broad-except
         except Exception as e:
             print(
-                f"Error parsing message: {message} with exception: {e.__repr__()}"
+                f"Error parsing message: {message} "
+                f"with exception: {repr(e)}"
             )
     return parsed_messages

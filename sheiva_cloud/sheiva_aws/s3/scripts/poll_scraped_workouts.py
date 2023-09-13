@@ -36,12 +36,40 @@ for file in files:
     workouts = json.loads(bucket["Body"].read())
     workouts_by_age_group[age_group].extend(workouts)
 
-
-urls = [
-    workout["url"]
+# Soft validate workouts
+all_workouts = [
+    workout
     for workouts in workouts_by_age_group.values()
     for workout in workouts
 ]
+
+for workout in all_workouts:
+    if len(workout["workout_components"]) == 0:
+        continue
+        print(f"Workout {workout['url']} has no workout components")
+    else:
+        for workout_component in workout["workout_components"]:
+            if len(workout_component["sets"]) == 0:
+                continue
+                print(
+                    f"Workout {workout['url']} has workout component {workout_component['name']} with no sets"
+                )
+            else:
+                for set_ in workout_component["sets"]:
+                    if len(set_["set_components"]) == 0:
+                        continue
+                        print(
+                            f"Workout {workout['url']} has set {set['name']} with no exercises"
+                        )
+                    else:
+                        for set_component in set_["set_components"]:
+                            if "exercise_name" not in set_component or not set_component["exercise_name"]:
+                                print(
+                                    f"Workout {workout['url']} has set {set_['name']} with invalid exercise name"
+                                )
+                    
+
+urls = [workout["url"] for workout in all_workouts]
 if len(urls) == len(set(urls)):
     print(f"No duplicates found in the {len(urls)} workouts")
     print("Exiting...")

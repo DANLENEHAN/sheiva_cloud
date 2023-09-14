@@ -21,6 +21,7 @@ SHEIVA_SCRAPE_BUCKET = os.getenv("SHEIVA_SCRAPE_BUCKET", "")
 WORKOUT_SCRAPE_TRIGGER_QUEUE_URL = os.getenv(
     "WORKOUT_SCRAPE_TRIGGER_QUEUE_URL", ""
 )
+GENDER = os.getenv("GENDER", "")
 
 
 def parse_workout_scrape_trigger_message(message: Dict) -> Tuple[int, str]:
@@ -54,8 +55,8 @@ def get_workout_link_bucket_dirs(s3_client: boto3.client) -> List:
     return [
         f["Key"]
         for f in page_iterator.search(
-            "Contents[?starts_with(Key, 'user-data/user-workout-links/') "
-            "&& ends_with(Key, '.json')]"
+            "Contents[?starts_with(Key, 'user-data/user-workout-links"
+            f"/{GENDER}/') && ends_with(Key, '.json')]"
         )
     ]
 

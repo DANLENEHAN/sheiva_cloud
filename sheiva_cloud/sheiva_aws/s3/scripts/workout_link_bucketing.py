@@ -13,7 +13,9 @@ import pandas as pd
 
 from sheiva_cloud.sheiva_aws.s3 import SHEIVA_SCRAPE_BUCKET as bucket_name
 
-workout_link_dir = "user-data/user-workout-links"
+GENDER = "male"
+
+workout_link_dir = f"user-data/user-workout-links/{GENDER}"
 
 boto3_session = boto3.Session()
 s3_client = boto3_session.client("s3")

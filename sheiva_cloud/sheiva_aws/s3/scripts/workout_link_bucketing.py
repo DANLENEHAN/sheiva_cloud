@@ -80,12 +80,14 @@ def bucket_data() -> Dict:
                 Key=f"{workout_link_dir}/{group}.json",
                 Body=json.dumps(links, indent=4),
             )
+    print(f"Bucketing group: age_unknown")
     links = list(pdf[pdf.Age == -1].Links)
     s3_client.put_object(
         Bucket=bucket_name,
         Key=f"{workout_link_dir}/age_unknown.json",
         Body=json.dumps(links, indent=4),
     )
+    bucket_numbers_dict["age_unknown"] = len(links)
     return bucket_numbers_dict
 
 

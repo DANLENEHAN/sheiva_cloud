@@ -7,7 +7,7 @@ Requires the following environment variables:
 
 import os
 
-from kuda.scrapers import scrape_workout as scraper
+from kuda.scrapers import parse_workout_html
 
 from sheiva_cloud.sheiva_aws.aws_lambda.containers.functions import process_scrape_event
 
@@ -19,6 +19,9 @@ GENDER = os.getenv("GENDER", "")
 # S3 bucket
 BUCKET = os.getenv("BUCKET", "")
 BUCKET_KEY = f"workout-data/{GENDER}" + "/{}/{}.json"
+
+# async batch size
+ASYNC_BATCH_SIZE = int(os.getenv("ASYNC_BATCH_SIZE", "10"))
 
 
 # pylint: disable=unused-argument
@@ -36,5 +39,5 @@ def handler(event, context):
         bucket_key=BUCKET_KEY,
         main_queue_url=MAIN_QUEUE,
         deadletter_queue_url=DEADLETTER_QUEUE_URL,
-        scraper=scraper,
+        html_parser=parse_workout_html,
     )

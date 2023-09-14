@@ -1,9 +1,9 @@
 import json
-from typing import Callable, Dict, List, Optional, Tuple, TypedDict
+from typing import Callable, Dict, List, Optional, TypedDict
 from uuid import uuid4
 
 import boto3
-import requests
+from kuda.scrapers import scrape_urls
 
 from sheiva_cloud.sheiva_aws.sqs.functions import parse_sqs_message_data
 from sheiva_cloud.sheiva_aws.sqs.standard_sqs import StandardSQS
@@ -40,32 +40,6 @@ def scrape_message_parser(message: Dict) -> ScraperMessage:
     )
 
 
-def scrape_urls(
-    urls: List[str], requests_session, scraper: Callable
-) -> Tuple[List[Dict], List[str]]:
-    """
-    Scrapes a list of urls.
-    Args:
-        urls (List[str]): list of urls
-        requests_session (requests.Session): requests session
-        scraper (Callable): scraper function
-    Returns:
-        Tuple[List[Dict], List[str]]: scraped data and failed urls
-    """
-
-    failed_urls = []
-    scraped_data = []
-    for url in urls:
-        try:
-            scraped_data.append(
-                scraper(url=url, requests_session=requests_session)
-            )
-        # pylint: disable=broad-except
-        except Exception:
-            failed_urls.append(url)
-    return scraped_data, failed_urls
-
-
 def save_scraped_data_to_s3(
     s3_client: boto3.client,
     bucket_name: str,
@@ -88,14 +62,15 @@ def save_scraped_data_to_s3(
     )
 
 
-# pylint: disable=too-many-arguments
+# pylint: disable=too-many-arguments, too-many-locals
 def process_scrape_event(
     event: Dict,
     bucket_name: str,
     bucket_key: str,
     main_queue_url: str,
     deadletter_queue_url: str,
-    scraper: Callable,
+    html_parser: Callable,
+    async_batch_size: int = 10,
 ):
     """
     Processes a scrape event.
@@ -105,13 +80,13 @@ def process_scrape_event(
         bucket_key (str): key of the s3 object
         main_queue_url (str): url of the main queue
         deadletter_queue_url (str): url of the deadletter queue
-        scraper (Callable): scraper function
+        html_parser (Callable): html parser
+        async_batch_size (int, optional): batch size for async scraping.
     """
 
     boto3_session = boto3.Session()
     s3_client = boto3_session.client("s3")
     sqs_client = boto3_session.client("sqs")
-    requests_session = requests.Session()
 
     # A scraper lambda function should only receive one message
     # from the queue at a time.
@@ -119,11 +94,19 @@ def process_scrape_event(
         sqs_body=event, parse_function=scrape_message_parser
     )[0]
 
-    scraped_data, failed_scrapes = scrape_urls(
+    results = scrape_urls(
         urls=message["urls"],
-        scraper=scraper,
-        requests_session=requests_session,
+        html_parser=html_parser,
+        batch_size=async_batch_size,
     )
+
+    failed_scrapes = []
+    scraped_data = []
+    for result in results:
+        if isinstance(result, str):
+            failed_scrapes.append(result)
+        else:
+            scraped_data.append(result)
 
     s3_folder = message.get("s3_folder")
     if s3_folder:

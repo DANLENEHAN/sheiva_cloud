@@ -23,6 +23,7 @@ ENV MAIN_QUEUE="https://sqs.eu-west-1.amazonaws.com/381528172721/WorkoutLinkQueu
 ENV DEADLETTER_QUEUE_URL="https://sqs.eu-west-1.amazonaws.com/381528172721/WorkoutLinkQueueDeadLetter"
 ENV BUCKET="sheiva-scraped-data"
 ENV GENDER="male"
+ENV ASYNC_BATCH_SIZE=10
 
 # Set the CMD to your handler (could also be done as a parameter override outside of the Dockerfile)
 CMD [ "lambda_function.handler" ]

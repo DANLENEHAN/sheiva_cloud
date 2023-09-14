@@ -142,10 +142,11 @@ def handler(event, context):
     print("Received SQS event")
     boto3_session = boto3.Session()
     s3_client = boto3_session.client("s3")
+    sqs_client = boto3_session.client("sqs")
 
     check_bucket_exists(s3_client=s3_client, bucket_name=SHEIVA_SCRAPE_BUCKET)
     workout_link_queue = StandardSQS(
-        queue_url=WORKOUTLINK_QUEUE_URL, boto3_session=boto3_session
+        queue_url=WORKOUTLINK_QUEUE_URL, sqs_client=sqs_client
     )
 
     workout_scrape_trigger_messages = parse_sqs_message_data(
@@ -170,7 +171,7 @@ def handler(event, context):
 
     print("Deleting workout scrape trigger message")
     workout_trigger_scrape_queue = StandardSQS(
-        queue_url=WORKOUT_SCRAPE_TRIGGER_QUEUE_URL, boto3_session=boto3_session
+        queue_url=WORKOUT_SCRAPE_TRIGGER_QUEUE_URL, sqs_client=sqs_client
     )
     workout_trigger_scrape_queue.delete_message(receipt_handle=receipt_handle)
 

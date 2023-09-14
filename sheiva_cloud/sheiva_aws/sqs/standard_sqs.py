@@ -32,7 +32,7 @@ class StandardSQS:
     def send_message(
         self,
         message_body: str,
-        message_attributes: Optional[dict] = None,
+        message_attributes: Optional[Dict] = None,
     ) -> Dict:
         """
         Send a message to the queue.

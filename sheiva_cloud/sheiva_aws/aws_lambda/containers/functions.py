@@ -1,10 +1,9 @@
 import json
-from typing import Dict, List, Callable, Tuple, TypedDict, Optional
-import requests
-
+from typing import Callable, Dict, List, Optional, Tuple, TypedDict
 from uuid import uuid4
 
 import boto3
+import requests
 
 from sheiva_cloud.sheiva_aws.sqs.functions import parse_sqs_message_data
 from sheiva_cloud.sheiva_aws.sqs.standard_sqs import StandardSQS
@@ -89,6 +88,7 @@ def save_scraped_data_to_s3(
     )
 
 
+# pylint: disable=too-many-arguments
 def process_scrape_event(
     event: Dict,
     bucket_name: str,
@@ -144,17 +144,17 @@ def process_scrape_event(
 
     # Send failed workout links to deadletter queue
     if failed_scrapes:
-        message_params = {
-            "message_body": json.dumps(failed_scrapes),
-        }
-        if s3_folder:
-            message_params["message_attributes"] = {
+        StandardSQS(
+            queue_url=deadletter_queue_url,
+            sqs_client=sqs_client,
+        ).send_message(
+            message_body=json.dumps(failed_scrapes),
+            message_attributes={
                 "s3_folder": {
                     "DataType": "String",
                     "StringValue": s3_folder,
                 }
             }
-        StandardSQS(
-            queue_url=deadletter_queue_url,
-            sqs_client=sqs_client,
-        ).send_message(**message_params)
+            if s3_folder
+            else {},
+        )

@@ -60,8 +60,10 @@ def scrape_urls(
             scraped_data.append(
                 scraper(url=url, requests_session=requests_session)
             )
+            print(f"Scraped url: {url}")
         # pylint: disable=broad-except
-        except Exception:
+        except Exception as exc:
+            print(f"Failed to scrape url: {url} with exception: {exc}")
             failed_urls.append(url)
     return scraped_data, failed_urls
 
@@ -81,6 +83,7 @@ def save_scraped_data_to_s3(
         data (List[Dict]): scraped data
     """
 
+    print(f"Saving scraped data to s3 bucket: {bucket_name} Key: {key}")
     s3_client.put_object(
         Bucket=bucket_name,
         Key=key,
@@ -118,12 +121,14 @@ def process_scrape_event(
     message = parse_sqs_message_data(
         sqs_body=event, parse_function=scrape_message_parser
     )[0]
+    print(f"Received message: {message}")
 
     scraped_data, failed_scrapes = scrape_urls(
         urls=message["urls"],
         scraper=scraper,
         requests_session=requests_session,
     )
+    print(f"Failed to scrape urls: {failed_scrapes}")
 
     s3_folder = message.get("s3_folder")
     if s3_folder:
@@ -138,12 +143,17 @@ def process_scrape_event(
         data=scraped_data,
     )
 
+    print(f"Deleting message from queue: {message}")
     StandardSQS(
         queue_url=main_queue_url, sqs_client=sqs_client
     ).delete_message(receipt_handle=message["receiptHandle"])
 
     # Send failed workout links to deadletter queue
     if failed_scrapes:
+        print(
+            f"Sending failed workout links: {failed_scrapes} "
+            "to deadletter queue"
+        )
         StandardSQS(
             queue_url=deadletter_queue_url,
             sqs_client=sqs_client,

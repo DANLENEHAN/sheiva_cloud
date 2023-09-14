@@ -39,6 +39,7 @@ original_bucket_numbers = {
     "age_86_90": 322,
     "age_91_95": 229,
     "age_96_100": 1016,
+    "age_unknown": 361883,
 }
 
 

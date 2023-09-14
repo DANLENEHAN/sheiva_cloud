@@ -9,9 +9,7 @@ import os
 
 from kuda.scrapers import scrape_workout as scraper
 
-from sheiva_cloud.sheiva_aws.aws_lambda.containers.functions import (
-    process_scrape_event,
-)
+from sheiva_cloud.sheiva_aws.aws_lambda.containers.functions import process_scrape_event
 
 # Queue URLs
 MAIN_QUEUE = os.getenv("MAIN_QUEUE", "")

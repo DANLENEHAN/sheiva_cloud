@@ -75,7 +75,7 @@ def send_workout_links_to_queue(
 
     print(
         f"Sending {len(workout_links)} workout links "
-        f"s3_folder: '{s3_folder}' to queue"
+        f"s3_folder: '{s3_folder}' to workout link queue"
     )
     workout_link_queue.send_message(
         message_body=json.dumps(workout_links),
@@ -119,7 +119,10 @@ def get_and_post_workout_links(
             s3_folder=bucket_dir.split("/")[-1].split(".")[0],
             workout_link_queue=workout_link_queue,
         )
-        print(f"Deleting {len(workout_links)} workout links from bucket")
+        print(
+            f"Deleting {len(workout_links)} workout "
+            f"links from bucket {bucket_dir}"
+        )
         bucket_contents = bucket_contents[num_workout_links_to_scrape:]
         s3_client.put_object(
             Bucket=SHEIVA_SCRAPE_BUCKET,

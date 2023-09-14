@@ -13,7 +13,8 @@ from typing import Dict, List, Tuple
 import boto3
 
 from sheiva_cloud.sheiva_aws.s3.functions import check_bucket_exists
-from sheiva_cloud.sheiva_aws.sqs.functions import get_sqs_queue, parse_sqs_message_data
+from sheiva_cloud.sheiva_aws.sqs.functions import parse_sqs_message_data
+from sheiva_cloud.sheiva_aws.sqs.standard_sqs import StandardSQS
 
 WORKOUTLINK_QUEUE_URL = os.getenv("WORKOUTLINK_QUEUE_URL", "")
 SHEIVA_SCRAPE_BUCKET = os.getenv("SHEIVA_SCRAPE_BUCKET", "")
@@ -53,37 +54,38 @@ def get_workout_link_bucket_dirs(s3_client: boto3.client) -> List:
     return [
         f["Key"]
         for f in page_iterator.search(
-            "Contents[?starts_with(Key, 'user-data/user-workout-links/') && ends_with(Key, '.json')]"
+            "Contents[?starts_with(Key, 'user-data/user-workout-links/') "
+            "&& ends_with(Key, '.json')]"
         )
     ]
 
 
 def send_workout_links_to_queue(
     workout_links: List,
-    age_group_bucket_folder: str,
+    s3_folder: str,
     workout_link_queue: boto3.client,
 ) -> str:
     """
     Sends workout links to the workout link queue.
     Args:
         workout_links (List): list of workout links
-        age_group_bucket_folder (str): age group bucket folder
+        s3_folder (str): age group bucket folder
         workout_link_queue (boto3.client): workout link queue
     """
 
     print(
-        f"Sending {len(workout_links)} workout links age_group_bucket_folder: '{age_group_bucket_folder}' to queue"
+        f"Sending {len(workout_links)} workout links "
+        f"s3_folder: '{s3_folder}' to queue"
     )
-    for workout_link in workout_links:
-        workout_link_queue.send_message(
-            message_body=workout_link,
-            message_attributes={
-                "age_group_bucket_folder": {
-                    "StringValue": age_group_bucket_folder,
-                    "DataType": "String",
-                }
-            },
-        )
+    workout_link_queue.send_message(
+        message_body=json.dumps(workout_links),
+        message_attributes={
+            "s3_folder": {
+                "StringValue": s3_folder,
+                "DataType": "String",
+            }
+        },
+    )
 
     return "Success"
 
@@ -100,7 +102,8 @@ def get_and_post_workout_links(
         s3_client (boto3.client): s3 client
         workout_link_queue (boto3.resource): workout link queue
         workout_link_bucket_dirs (List): list of workout link bucket dirs
-        num_workout_links_to_scrape (int): number of workout links to scrape per age group
+        num_workout_links_to_scrape (int): number of workout links
+            to scrape per age group
     """
 
     for bucket_dir in workout_link_bucket_dirs:
@@ -113,7 +116,7 @@ def get_and_post_workout_links(
         print(f"Sending {len(workout_links)} workout links to queue")
         send_workout_links_to_queue(
             workout_links=workout_links,
-            age_group_bucket_folder=bucket_dir.split("/")[-1].split(".")[0],
+            s3_folder=bucket_dir.split("/")[-1].split(".")[0],
             workout_link_queue=workout_link_queue,
         )
         print(f"Deleting {len(workout_links)} workout links from bucket")
@@ -141,8 +144,8 @@ def handler(event, context):
     s3_client = boto3_session.client("s3")
 
     check_bucket_exists(s3_client=s3_client, bucket_name=SHEIVA_SCRAPE_BUCKET)
-    workout_link_queue = get_sqs_queue(
-        WORKOUTLINK_QUEUE_URL, boto3_session=boto3_session
+    workout_link_queue = StandardSQS(
+        queue_url=WORKOUTLINK_QUEUE_URL, boto3_session=boto3_session
     )
 
     workout_scrape_trigger_messages = parse_sqs_message_data(
@@ -166,8 +169,8 @@ def handler(event, context):
     )
 
     print("Deleting workout scrape trigger message")
-    workout_trigger_scrape_queue = get_sqs_queue(
-        WORKOUT_SCRAPE_TRIGGER_QUEUE_URL, boto3_session=boto3_session
+    workout_trigger_scrape_queue = StandardSQS(
+        queue_url=WORKOUT_SCRAPE_TRIGGER_QUEUE_URL, boto3_session=boto3_session
     )
     workout_trigger_scrape_queue.delete_message(receipt_handle=receipt_handle)
 

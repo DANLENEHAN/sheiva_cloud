@@ -24,9 +24,9 @@ class StandardSQS:
     def __init__(
         self,
         queue_url: str,
-        boto3_session: Optional[boto3.Session] = None,
+        sqs_client: boto3.client,
     ):
-        self.sqs_session = (boto3_session or boto3.Session()).client("sqs")
+        self.sqs_client = sqs_client
         self.queue_url = queue_url
 
     def send_message(
@@ -43,7 +43,7 @@ class StandardSQS:
             dict: The response from the SQS send_message method.
         """
 
-        response = self.sqs_session.send_message(
+        response = self.sqs_client.send_message(
             QueueUrl=self.queue_url,
             MessageBody=message_body,
             MessageAttributes=message_attributes or {},
@@ -66,7 +66,7 @@ class StandardSQS:
             dict: The response from the SQS receive_message method.
         """
 
-        response = self.sqs_session.receive_message(
+        response = self.sqs_client.receive_message(
             QueueUrl=self.queue_url,
             MaxNumberOfMessages=max_number_of_messages,
         )
@@ -85,7 +85,7 @@ class StandardSQS:
             dict: The response from the SQS delete_message method.
         """
 
-        response = self.sqs_session.delete_message(
+        response = self.sqs_client.delete_message(
             QueueUrl=self.queue_url,
             ReceiptHandle=receipt_handle,
         )
@@ -98,5 +98,5 @@ class StandardSQS:
             dict: The response from the SQS purge_queue method.
         """
 
-        response = self.sqs_session.purge_queue(QueueUrl=self.queue_url)
+        response = self.sqs_client.purge_queue(QueueUrl=self.queue_url)
         return response

@@ -115,9 +115,10 @@ def get_and_post_workout_links(
         bucket_contents = json.loads(bucket["Body"].read().decode("utf-8"))
         workout_links = bucket_contents[:num_workout_links_to_scrape]
         print(f"Sending {len(workout_links)} workout links to queue")
+        age_group = bucket_dir.split("/")[-1].split(".")[0]
         send_workout_links_to_queue(
             workout_links=workout_links,
-            bucket_key=bucket_dir.split(".")[0],
+            bucket_key=f"workout-data/{GENDER}/{age_group}",
             workout_link_queue=workout_link_queue,
         )
         print(

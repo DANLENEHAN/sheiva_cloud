@@ -14,11 +14,6 @@ from sheiva_cloud.sheiva_aws.aws_lambda.containers.functions import process_scra
 # Queue URLs
 MAIN_QUEUE = os.getenv("MAIN_QUEUE", "")
 DEADLETTER_QUEUE_URL = os.getenv("DEADLETTER_QUEUE_URL", "")
-GENDER = os.getenv("GENDER", "")
-
-# S3 bucket
-BUCKET = os.getenv("BUCKET", "")
-BUCKET_KEY = f"workout-data/{GENDER}" + "/{}/{}.json"
 
 # async batch size
 ASYNC_BATCH_SIZE = int(os.getenv("ASYNC_BATCH_SIZE", "10"))
@@ -35,8 +30,6 @@ def handler(event, context):
 
     process_scrape_event(
         event=event,
-        bucket_name=BUCKET,
-        bucket_key=BUCKET_KEY,
         main_queue_url=MAIN_QUEUE,
         deadletter_queue_url=DEADLETTER_QUEUE_URL,
         html_parser=parse_workout_html,

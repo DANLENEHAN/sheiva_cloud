@@ -63,26 +63,26 @@ def get_workout_link_bucket_dirs(s3_client: boto3.client) -> List:
 
 def send_workout_links_to_queue(
     workout_links: List,
-    s3_folder: str,
+    bucket_key: str,
     workout_link_queue: boto3.client,
 ) -> str:
     """
     Sends workout links to the workout link queue.
     Args:
         workout_links (List): list of workout links
-        s3_folder (str): age group bucket folder
+        bucket_key (str): key of the s3 bucket
         workout_link_queue (boto3.client): workout link queue
     """
 
     print(
         f"Sending {len(workout_links)} workout links "
-        f"s3_folder: '{s3_folder}' to workout link queue"
+        f"bucket_key: '{bucket_key}' to workout link queue"
     )
     workout_link_queue.send_message(
         message_body=json.dumps(workout_links),
         message_attributes={
-            "s3_folder": {
-                "StringValue": s3_folder,
+            "bucket_key": {
+                "StringValue": bucket_key,
                 "DataType": "String",
             }
         },
@@ -117,7 +117,7 @@ def get_and_post_workout_links(
         print(f"Sending {len(workout_links)} workout links to queue")
         send_workout_links_to_queue(
             workout_links=workout_links,
-            s3_folder=bucket_dir.split("/")[-1].split(".")[0],
+            bucket_key=bucket_dir.split(".")[0],
             workout_link_queue=workout_link_queue,
         )
         print(

@@ -1,5 +1,5 @@
 import json
-from typing import Callable, Dict, List, Optional, TypedDict
+from typing import Callable, Dict, List, TypedDict
 from uuid import uuid4
 
 import boto3
@@ -8,15 +8,20 @@ from kuda.scrapers import scrape_urls
 from sheiva_cloud.sheiva_aws.sqs.functions import parse_sqs_message_data
 from sheiva_cloud.sheiva_aws.sqs.standard_sqs import StandardSQS
 
+SHEIVA_SCRAPE_DATA_BUCKET = "sheiva-scraped-data"
+
 
 class ScraperMessage(TypedDict):
     """
     Message structure for scraping urls.
+    urls: list of urls to scrape
+    receiptHandle: receipt handle of the message
+    bucket_key: key of the s3 bucket
     """
 
     urls: List[str]
     receiptHandle: str
-    s3_folder: Optional[str]
+    bucket_key: str
 
 
 def scrape_message_parser(message: Dict) -> ScraperMessage:
@@ -33,7 +38,7 @@ def scrape_message_parser(message: Dict) -> ScraperMessage:
         {
             "urls": json.loads(message["body"]),
             "receiptHandle": message["receiptHandle"],
-            "s3_folder": message["messageAttributes"]["s3_folder"][
+            "bucket_key": message["messageAttributes"]["bucket_key"][
                 "stringValue"
             ],
         }
@@ -65,8 +70,6 @@ def save_scraped_data_to_s3(
 # pylint: disable=too-many-arguments, too-many-locals
 def process_scrape_event(
     event: Dict,
-    bucket_name: str,
-    bucket_key: str,
     main_queue_url: str,
     deadletter_queue_url: str,
     html_parser: Callable,
@@ -76,8 +79,6 @@ def process_scrape_event(
     Processes a scrape event.
     Args:
         event (Dict): event object
-        bucket_name (str): name of the s3 bucket
-        bucket_key (str): key of the s3 object
         main_queue_url (str): url of the main queue
         deadletter_queue_url (str): url of the deadletter queue
         html_parser (Callable): html parser
@@ -108,16 +109,11 @@ def process_scrape_event(
         else:
             scraped_data.append(result)
 
-    s3_folder = message.get("s3_folder")
-    if s3_folder:
-        bucket_key = bucket_key.format(s3_folder, str(uuid4()))
-    else:
-        bucket_key = bucket_key.format(str(uuid4()))
-
+    bucket_key = message["bucket_key"]
     save_scraped_data_to_s3(
         s3_client=s3_client,
-        bucket_name=bucket_name,
-        key=bucket_key,
+        bucket_name=SHEIVA_SCRAPE_DATA_BUCKET,
+        key=f"{bucket_key}/{uuid4()}.json",
         data=scraped_data,
     )
 
@@ -133,11 +129,11 @@ def process_scrape_event(
         ).send_message(
             message_body=json.dumps(failed_scrapes),
             message_attributes={
-                "s3_folder": {
+                "bucket_key": {
                     "DataType": "String",
-                    "StringValue": s3_folder,
+                    "StringValue": bucket_key,
                 }
             }
-            if s3_folder
+            if bucket_key
             else {},
         )

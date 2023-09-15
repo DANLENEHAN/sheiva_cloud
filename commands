@@ -6,11 +6,11 @@ pip install -e .
 
 ## AWS Stuff
 
-# Install aws cli
-pip install awscli
-
 # Set up aws credentials
 aws configure
+
+# Add your  'aws_access_key_id' and 'aws_secret_access_key' to
+~/.aws/credentials
 
 ## Creating a Dockerfile for a Lambda function ##
 #### START #####

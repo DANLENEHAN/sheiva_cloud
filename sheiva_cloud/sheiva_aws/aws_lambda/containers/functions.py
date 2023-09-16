@@ -5,10 +5,9 @@ from uuid import uuid4
 import boto3
 from kuda.scrapers import scrape_urls
 
+from sheiva_cloud.sheiva_aws.s3 import SHEIVA_SCRAPE_BUCKET
 from sheiva_cloud.sheiva_aws.sqs.functions import parse_sqs_message_data
 from sheiva_cloud.sheiva_aws.sqs.standard_sqs import StandardSQS
-
-SHEIVA_SCRAPE_DATA_BUCKET = "sheiva-scraped-data"
 
 
 class ScraperMessage(TypedDict):
@@ -112,7 +111,7 @@ def process_scrape_event(
     bucket_key = message["bucket_key"]
     save_scraped_data_to_s3(
         s3_client=s3_client,
-        bucket_name=SHEIVA_SCRAPE_DATA_BUCKET,
+        bucket_name=SHEIVA_SCRAPE_BUCKET,
         key=f"{bucket_key}/{uuid4()}.json",
         data=scraped_data,
     )

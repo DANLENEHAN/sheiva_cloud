@@ -10,10 +10,10 @@ import os
 from kuda.scrapers import parse_workout_html
 
 from sheiva_cloud.sheiva_aws.aws_lambda.containers.functions import process_scrape_event
-
-# Queue URLs
-MAIN_QUEUE = os.getenv("MAIN_QUEUE", "")
-DEADLETTER_QUEUE_URL = os.getenv("DEADLETTER_QUEUE_URL", "")
+from sheiva_cloud.sheiva_aws.sqs import (
+    WORKOUTLINK_DEADLETTER_QUEUE_URL as DEADLETTER_QUEUE_URL,
+)
+from sheiva_cloud.sheiva_aws.sqs import WORKOUTLINK_QUEUE_URL as MAIN_QUEUE
 
 # async batch size
 ASYNC_BATCH_SIZE = int(os.getenv("ASYNC_BATCH_SIZE", "10"))

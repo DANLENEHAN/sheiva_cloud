@@ -12,15 +12,15 @@ from typing import Dict, List, Tuple
 
 import boto3
 
+from sheiva_cloud.sheiva_aws.s3 import SHEIVA_SCRAPE_BUCKET
 from sheiva_cloud.sheiva_aws.s3.functions import check_bucket_exists
+from sheiva_cloud.sheiva_aws.sqs import (
+    WORKOUT_SCRAPE_TRIGGER_QUEUE_URL,
+    WORKOUTLINK_QUEUE_URL,
+)
 from sheiva_cloud.sheiva_aws.sqs.functions import parse_sqs_message_data
 from sheiva_cloud.sheiva_aws.sqs.standard_sqs import StandardSQS
 
-WORKOUTLINK_QUEUE_URL = os.getenv("WORKOUTLINK_QUEUE_URL", "")
-SHEIVA_SCRAPE_BUCKET = os.getenv("SHEIVA_SCRAPE_BUCKET", "")
-WORKOUT_SCRAPE_TRIGGER_QUEUE_URL = os.getenv(
-    "WORKOUT_SCRAPE_TRIGGER_QUEUE_URL", ""
-)
 GENDER = os.getenv("GENDER", "")
 
 

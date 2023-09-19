@@ -5,12 +5,16 @@ Requires the following environment variables:
 """
 
 import os
+
 import boto3
 
-from sheiva_cloud.sheiva_aws.sqs.standard_sqs import StandardSQS
 from sheiva_cloud.sheiva_aws.sqs import WORKOUT_SCRAPE_TRIGGER_QUEUE_URL
+from sheiva_cloud.sheiva_aws.sqs.standard_sqs import StandardSQS
 
-NUMBER_WORKOUT_LINKS_PER_MESSAGE = os.getenv("NUMBER_WORKOUT_LINKS_PER_MESSAGE", None)
+NUMBER_WORKOUT_LINKS_PER_MESSAGE = os.getenv(
+    "NUMBER_WORKOUT_LINKS_PER_MESSAGE", None
+)
+
 
 # pylint: disable=unused-argument
 def handler(event, context):

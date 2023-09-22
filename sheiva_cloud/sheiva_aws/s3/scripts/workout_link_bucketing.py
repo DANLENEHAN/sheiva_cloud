@@ -17,9 +17,6 @@ GENDER = "male"
 
 workout_link_dir = f"user-data/user-workout-links/{GENDER}"
 
-boto3_session = boto3.Session()
-s3_client = boto3_session.client("s3")
-
 # As of 13/09/2023 Male workout link counts
 original_bucket_numbers = {
     "age_16_20": 235803,
@@ -43,7 +40,7 @@ original_bucket_numbers = {
 }
 
 
-def get_all_workout_links() -> pd.DataFrame:
+def get_all_workout_links(s3_client: boto3.client) -> pd.DataFrame:
     """
     Retrieves all workout links from s3.
     """
@@ -61,7 +58,7 @@ def get_all_workout_links() -> pd.DataFrame:
     return pd.DataFrame(columns=columns, data=[d.split("|") for d in data])
 
 
-def bucket_data() -> Dict:
+def bucket_data(s3_client: boto3.client) -> Dict:
     """
     Bucket the workout links into age groups of 5 years.
     Note: between means inclusive of the bounds.
@@ -91,7 +88,45 @@ def bucket_data() -> Dict:
     bucket_numbers_dict["age_unknown"] = len(links)
     return bucket_numbers_dict
 
+def get_all_workout_link_buckets(s3_client: boto3.client):
+    print("Getting workout link bucket dirs")
+    paginator = s3_client.get_paginator("list_objects_v2")
+    page_iterator = paginator.paginate(Bucket=bucket_name)
+    return [
+        f["Key"]
+        for f in page_iterator.search(
+            "Contents[?starts_with(Key, 'user-data/user-workout-links"
+            f"/{GENDER}/') && ends_with(Key, '.json')]"
+        )
+    ]
 
 if __name__ == "__main__":
-    response = bucket_data()
-    pprint(response)
+    boto3_session = boto3.Session()
+    s3_client = boto3_session.client("s3")
+
+    workout_link_keys = get_all_workout_link_buckets(s3_client=s3_client)
+
+    checked_buckets = {}
+    for key in workout_link_keys:
+        print("Checking bucket: ", key)
+        res = s3_client.get_object(Bucket=bucket_name, Key=key)
+        obj = json.loads(res["Body"].read())
+
+        bucket = key.split("/")[-1].split(".")[0]
+        orginal_number = original_bucket_numbers[bucket]
+        checked_buckets[bucket] = {
+            "processed": orginal_number - len(obj),
+            "left": len(obj),
+            "bucket": bucket,
+        }
+
+    for bucket in original_bucket_numbers:
+        if bucket not in checked_buckets:
+            checked_buckets[bucket] = {
+                "processed": original_bucket_numbers[bucket],
+                "bucket": bucket,
+                "left": 0,
+            }
+
+    print("Total processed: ", sum([x["processed"] for x in checked_buckets.values()]))
+    print("Total left: ", sum([x["left"] for x in checked_buckets.values()]))

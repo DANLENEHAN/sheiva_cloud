@@ -69,6 +69,7 @@ class StandardSQS:
         response = self.sqs_client.receive_message(
             QueueUrl=self.queue_url,
             MaxNumberOfMessages=max_number_of_messages,
+            MessageAttributeNames=["All"],
         )
         return response
 

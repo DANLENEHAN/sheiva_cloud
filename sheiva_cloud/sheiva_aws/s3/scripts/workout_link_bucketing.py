@@ -65,7 +65,7 @@ def bucket_data(s3_client: boto3.client) -> Dict:
     """
 
     bucket_numbers_dict = {}
-    pdf = get_all_workout_links()
+    pdf = get_all_workout_links(s3_client=s3_client)
     pdf.Age = pdf.Age.apply(lambda x: int(x) if x not in ["--", ""] else -1)
     for x in range(5, 101, 5):
         group = f"age_{x - 4}_{x}"
@@ -88,6 +88,7 @@ def bucket_data(s3_client: boto3.client) -> Dict:
     bucket_numbers_dict["age_unknown"] = len(links)
     return bucket_numbers_dict
 
+
 def get_all_workout_link_buckets(s3_client: boto3.client):
     print("Getting workout link bucket dirs")
     paginator = s3_client.get_paginator("list_objects_v2")
@@ -99,6 +100,7 @@ def get_all_workout_link_buckets(s3_client: boto3.client):
             f"/{GENDER}/') && ends_with(Key, '.json')]"
         )
     ]
+
 
 if __name__ == "__main__":
     boto3_session = boto3.Session()
@@ -128,5 +130,8 @@ if __name__ == "__main__":
                 "left": 0,
             }
 
-    print("Total processed: ", sum([x["processed"] for x in checked_buckets.values()]))
+    print(
+        "Total processed: ",
+        sum([x["processed"] for x in checked_buckets.values()]),
+    )
     print("Total left: ", sum([x["left"] for x in checked_buckets.values()]))

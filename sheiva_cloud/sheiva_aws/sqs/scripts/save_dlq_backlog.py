@@ -1,15 +1,15 @@
-import boto3
 import json
+from uuid import uuid4
+
+import boto3
 
 from sheiva_cloud.sheiva_aws.sqs import WORKOUTLINK_DEADLETTER_QUEUE_URL
-
 from sheiva_cloud.sheiva_aws.sqs.standard_sqs import StandardSQS
 
 
 def main():
     """
     Main function for clearing the DLQ
-    :return:
     """
 
     boto3_session = boto3.Session()
@@ -35,7 +35,7 @@ def main():
         # Don't delete the message for now just purge it's safer
         # sqs.delete_message(message["ReceiptHandle"])
 
-    with open("dlq_backlog.json", "w") as f:
+    with open(f"dlq_backlog-{uuid4()}.json", "w") as f:
         json.dump(message_dicts, f, indent=4)
 
 

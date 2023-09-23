@@ -5,7 +5,6 @@ use only.
 """
 
 import json
-from pprint import pprint
 from typing import Dict
 
 import boto3

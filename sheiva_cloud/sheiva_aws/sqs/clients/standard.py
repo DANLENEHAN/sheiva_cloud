@@ -16,9 +16,10 @@ from typing import Dict, Optional
 import boto3
 
 
-class StandardSQS:
+class StandardClient:
     """
-    Class for interacting with Standard Queue Service (SQS).
+    Client class for interacting with Standard
+    Queue Service (SQS).
     """
 
     def __init__(
@@ -57,11 +58,7 @@ class StandardSQS:
         Receive messages from the queue.
         Args:
             max_number_of_messages (int): The maximum number
-                of messages to return.
-            We should be careful with requesting more than
-                one message because deleting
-            a message from the queue is not atomic. If we
-                request more than one message.
+                of messages to return. The default is 1.
         Returns:
             dict: The response from the SQS receive_message method.
         """

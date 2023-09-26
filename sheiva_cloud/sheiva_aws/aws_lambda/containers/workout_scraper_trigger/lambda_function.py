@@ -18,8 +18,8 @@ from sheiva_cloud.sheiva_aws.sqs import (
     WORKOUT_SCRAPE_TRIGGER_QUEUE_URL,
     WORKOUTLINK_QUEUE_URL,
 )
-from sheiva_cloud.sheiva_aws.sqs.functions import parse_sqs_message_data
-from sheiva_cloud.sheiva_aws.sqs.standard_sqs import StandardSQS
+from sheiva_cloud.sheiva_aws.sqs.clients import StandardClient
+from sheiva_cloud.sheiva_aws.sqs.utils import parse_sqs_message_data
 
 GENDER = os.getenv("GENDER", "")
 
@@ -150,7 +150,7 @@ def handler(event, context):
     sqs_client = boto3_session.client("sqs")
 
     check_bucket_exists(s3_client=s3_client, bucket_name=SHEIVA_SCRAPE_BUCKET)
-    workout_link_queue = StandardSQS(
+    workout_link_queue = StandardClient(
         queue_url=WORKOUTLINK_QUEUE_URL, sqs_client=sqs_client
     )
 
@@ -175,7 +175,7 @@ def handler(event, context):
     )
 
     print("Deleting workout scrape trigger message")
-    workout_trigger_scrape_queue = StandardSQS(
+    workout_trigger_scrape_queue = StandardClient(
         queue_url=WORKOUT_SCRAPE_TRIGGER_QUEUE_URL, sqs_client=sqs_client
     )
     workout_trigger_scrape_queue.delete_message(receipt_handle=receipt_handle)

@@ -1,69 +1,14 @@
 import json
-from typing import Callable, Dict, List, TypedDict
+from typing import Callable, Dict
 from uuid import uuid4
 
 import boto3
 from kuda.scrapers import scrape_urls
 
 from sheiva_cloud.sheiva_aws.s3 import SHEIVA_SCRAPE_BUCKET
-from sheiva_cloud.sheiva_aws.sqs.functions import parse_sqs_message_data
-from sheiva_cloud.sheiva_aws.sqs.standard_sqs import StandardSQS
-
-
-class ScraperMessage(TypedDict):
-    """
-    Message structure for scraping urls.
-    urls: list of urls to scrape
-    receiptHandle: receipt handle of the message
-    bucket_key: key of the s3 bucket
-    """
-
-    urls: List[str]
-    receiptHandle: str
-    bucket_key: str
-
-
-def scrape_message_parser(message: Dict) -> ScraperMessage:
-    """
-    Parses a scrape message from the SQS queue. Follows
-    the ScraperMessage structure.
-    Args:
-        message (Dict): message from the SQS queue
-    Returns:
-        ScraperMessage: parsed message
-    """
-
-    return ScraperMessage(
-        {
-            "urls": json.loads(message["body"]),
-            "receiptHandle": message["receiptHandle"],
-            "bucket_key": message["messageAttributes"]["bucket_key"][
-                "stringValue"
-            ],
-        }
-    )
-
-
-def save_scraped_data_to_s3(
-    s3_client: boto3.client,
-    bucket_name: str,
-    key: str,
-    data: List[Dict],
-) -> None:
-    """
-    Saves scraped data to s3.
-    Args:
-        s3_client (boto3.client): s3 client
-        bucket_name (str): name of the s3 bucket
-        key (str): key of the s3 object
-        data (List[Dict]): scraped data
-    """
-
-    s3_client.put_object(
-        Bucket=bucket_name,
-        Key=key,
-        Body=json.dumps(data, indent=4),
-    )
+from sheiva_cloud.sheiva_aws.sqs.clients import StandardClient
+from sheiva_cloud.sheiva_aws.sqs.message_parsers import scrape_message_parser
+from sheiva_cloud.sheiva_aws.sqs.utils import parse_sqs_message_data
 
 
 # pylint: disable=too-many-arguments, too-many-locals
@@ -109,20 +54,19 @@ def process_scrape_event(
             scraped_data.append(result)
 
     bucket_key = message["bucket_key"]
-    save_scraped_data_to_s3(
-        s3_client=s3_client,
-        bucket_name=SHEIVA_SCRAPE_BUCKET,
-        key=f"{bucket_key}/{uuid4()}.json",
-        data=scraped_data,
+    s3_client.put_object(
+        Bucket=SHEIVA_SCRAPE_BUCKET,
+        Key=f"{bucket_key}/{uuid4()}.json",
+        Body=json.dumps(scraped_data, indent=4),
     )
 
-    StandardSQS(
+    StandardClient(
         queue_url=main_queue_url, sqs_client=sqs_client
     ).delete_message(receipt_handle=message["receiptHandle"])
 
     # Send failed workout links to deadletter queue
     if failed_scrapes:
-        StandardSQS(
+        StandardClient(
             queue_url=deadletter_queue_url,
             sqs_client=sqs_client,
         ).send_message(

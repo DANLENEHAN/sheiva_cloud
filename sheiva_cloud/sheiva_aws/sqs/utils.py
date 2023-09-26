@@ -1,5 +1,8 @@
-from typing import Callable, Dict, List
+"""
+Module for generic SQS utilities.
+"""
 
+from typing import Callable, Dict, List
 
 def parse_sqs_message_data(sqs_body: Dict, parse_function: Callable) -> List:
     """

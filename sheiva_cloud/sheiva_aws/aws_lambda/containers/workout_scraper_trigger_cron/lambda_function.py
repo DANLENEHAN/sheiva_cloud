@@ -9,7 +9,7 @@ import os
 import boto3
 
 from sheiva_cloud.sheiva_aws.sqs import WORKOUT_SCRAPE_TRIGGER_QUEUE_URL
-from sheiva_cloud.sheiva_aws.sqs.standard_sqs import StandardSQS
+from sheiva_cloud.sheiva_aws.sqs.clients import StandardClient
 
 NUMBER_WORKOUT_LINKS_PER_MESSAGE = os.getenv(
     "NUMBER_WORKOUT_LINKS_PER_MESSAGE", None
@@ -30,7 +30,7 @@ def handler(event, context):
     boto3_session = boto3.Session()
     sqs_client = boto3_session.client("sqs")
 
-    queue = StandardSQS(
+    queue = StandardClient(
         queue_url=WORKOUT_SCRAPE_TRIGGER_QUEUE_URL, sqs_client=sqs_client
     )
 

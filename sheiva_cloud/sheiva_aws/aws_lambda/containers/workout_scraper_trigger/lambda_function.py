@@ -19,7 +19,7 @@ from sheiva_cloud.sheiva_aws.sqs import (
     WORKOUTLINK_QUEUE_URL,
 )
 from sheiva_cloud.sheiva_aws.sqs.clients import StandardClient
-from sheiva_cloud.sheiva_aws.sqs.utils import parse_sqs_message_data
+from sheiva_cloud.sheiva_aws.sqs.utils import process_sqs_event
 
 GENDER = os.getenv("GENDER", "")
 
@@ -154,8 +154,8 @@ def handler(event, context):
         queue_url=WORKOUTLINK_QUEUE_URL, sqs_client=sqs_client
     )
 
-    workout_scrape_trigger_messages = parse_sqs_message_data(
-        sqs_body=event, parse_function=parse_workout_scrape_trigger_message
+    workout_scrape_trigger_messages = process_sqs_event(
+        sqs_event=event, parse_function=parse_workout_scrape_trigger_message
     )
     # Should only be one message
     (

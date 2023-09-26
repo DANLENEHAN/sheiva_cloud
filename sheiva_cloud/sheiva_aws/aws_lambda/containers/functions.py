@@ -1,43 +1,29 @@
 import json
-from typing import Callable, Dict
+from typing import Callable
 from uuid import uuid4
 
 import boto3
 from kuda.scrapers import scrape_urls
 
 from sheiva_cloud.sheiva_aws.s3 import SHEIVA_SCRAPE_BUCKET
-from sheiva_cloud.sheiva_aws.sqs.clients import StandardClient
-from sheiva_cloud.sheiva_aws.sqs.message_parsers import scrape_message_parser
-from sheiva_cloud.sheiva_aws.sqs.utils import parse_sqs_message_data
+from sheiva_cloud.sheiva_aws.sqs import ScraperMessage, SqsResponse
 
 
-# pylint: disable=too-many-arguments, too-many-locals
 def process_scrape_event(
-    event: Dict,
-    main_queue_url: str,
-    deadletter_queue_url: str,
+    message: ScraperMessage,
     html_parser: Callable,
     async_batch_size: int = 10,
-):
+) -> SqsResponse:
     """
     Processes a scrape event.
     Args:
-        event (Dict): event object
-        main_queue_url (str): url of the main queue
-        deadletter_queue_url (str): url of the deadletter queue
+        message (ScraperMessage): the message to be processed
         html_parser (Callable): html parser
         async_batch_size (int, optional): batch size for async scraping.
     """
 
     boto3_session = boto3.Session()
     s3_client = boto3_session.client("s3")
-    sqs_client = boto3_session.client("sqs")
-
-    # A scraper lambda function should only receive one message
-    # from the queue at a time.
-    message = parse_sqs_message_data(
-        sqs_body=event, parse_function=scrape_message_parser
-    )[0]
 
     results = scrape_urls(
         urls=message["urls"],
@@ -60,23 +46,17 @@ def process_scrape_event(
         Body=json.dumps(scraped_data, indent=4),
     )
 
-    StandardClient(
-        queue_url=main_queue_url, sqs_client=sqs_client
-    ).delete_message(receipt_handle=message["receiptHandle"])
-
-    # Send failed workout links to deadletter queue
-    if failed_scrapes:
-        StandardClient(
-            queue_url=deadletter_queue_url,
-            sqs_client=sqs_client,
-        ).send_message(
-            message_body=json.dumps(failed_scrapes),
-            message_attributes={
-                "bucket_key": {
-                    "DataType": "String",
-                    "StringValue": bucket_key,
-                }
+    return {
+        "receipt_handles_to_delete": [message["receiptHandle"]],
+        "messages_to_dlq": [
+            {
+                "message_body": json.dumps(failed_scrapes),
+                "message_attributes": {
+                    "bucket_key": {
+                        "DataType": "String",
+                        "StringValue": bucket_key,
+                    }
+                },
             }
-            if bucket_key
-            else {},
-        )
+        ],
+    }

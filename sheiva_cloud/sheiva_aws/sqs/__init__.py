@@ -3,7 +3,11 @@ WORKOUTLINK_QUEUE_URL = f"{BASE_URL}/WorkoutLinkQueue"
 WORKOUTLINK_DEADLETTER_QUEUE_URL = f"{BASE_URL}/WorkoutLinkQueueDeadLetter"
 WORKOUT_SCRAPE_TRIGGER_QUEUE_URL = f"{BASE_URL}/WorkoutScrapeTriggerQueue"
 
-from sheiva_cloud.sheiva_aws.sqs.message_parsers import (
+from sheiva_cloud.sheiva_aws.sqs.classes import (
     FileTransformerMessage,
+    ParsedSqsMessage,
+    ReceivedSqsMessage,
     ScraperMessage,
+    SqsEvent,
+    SqsResponse,
 )

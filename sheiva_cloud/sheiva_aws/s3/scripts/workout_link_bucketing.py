@@ -14,7 +14,7 @@ from sheiva_cloud.sheiva_aws.s3 import SHEIVA_SCRAPE_BUCKET as bucket_name
 
 GENDER = "male"
 
-workout_link_dir = f"user-data/user-workout-links/{GENDER}"
+workout_link_dir = f"highrise/user-data/user-workout-links/{GENDER}"
 
 # As of 13/09/2023 Male workout link counts
 original_bucket_numbers = {
@@ -95,7 +95,7 @@ def get_all_workout_link_buckets(s3_client: boto3.client):
     return [
         f["Key"]
         for f in page_iterator.search(
-            "Contents[?starts_with(Key, 'user-data/user-workout-links"
+            "Contents[?starts_with(Key, 'highrise/user-data/user-workout-links"
             f"/{GENDER}/') && ends_with(Key, '.json')]"
         )
     ]

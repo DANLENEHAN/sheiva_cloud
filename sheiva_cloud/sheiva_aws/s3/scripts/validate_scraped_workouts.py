@@ -12,7 +12,7 @@ import boto3
 
 from sheiva_cloud.sheiva_aws.s3 import SHEIVA_SCRAPE_BUCKET as bucket_name
 
-scraped_workouts_dir = "workout-data/male"
+scraped_workouts_dir = "highrise/workout-data/male"
 
 boto3_session = boto3.Session()
 

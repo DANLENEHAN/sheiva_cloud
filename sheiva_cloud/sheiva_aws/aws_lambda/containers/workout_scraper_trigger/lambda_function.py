@@ -39,7 +39,7 @@ def get_workout_link_bucket_dirs(s3_client: boto3.client) -> List:
     return [
         f["Key"]
         for f in page_iterator.search(
-            "Contents[?starts_with(Key, 'user-data/user-workout-links"
+            "Contents[?starts_with(Key, 'highrise/user-data/user-workout-links"
             f"/{GENDER}/') && ends_with(Key, '.json')]"
         )
     ]
@@ -102,7 +102,7 @@ def get_and_post_workout_links(
         age_group = bucket_dir.split("/")[-1].split(".")[0]
         send_workout_links_to_queue(
             workout_links=workout_links,
-            bucket_key=f"workout-data/{GENDER}/{age_group}",
+            bucket_key=f"highrise/workout-data/{GENDER}/{age_group}",
             workout_link_queue=workout_link_queue,
         )
         print(

@@ -3,7 +3,7 @@ from uuid import uuid4
 
 import boto3
 
-from sheiva_cloud.sheiva_aws.sqs import WORKOUTLINK_DEADLETTER_QUEUE_URL
+from sheiva_cloud.sheiva_aws.sqs import WORKOUT_SCRAPER_DEADLETTER_QUEUE
 from sheiva_cloud.sheiva_aws.sqs.clients import StandardClient
 
 
@@ -14,7 +14,7 @@ def main():
 
     boto3_session = boto3.Session()
     sqs = StandardClient(
-        queue_url=WORKOUTLINK_DEADLETTER_QUEUE_URL,
+        queue_url=WORKOUT_SCRAPER_DEADLETTER_QUEUE,
         sqs_client=boto3_session.client("sqs"),
     )
 

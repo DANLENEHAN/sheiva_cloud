@@ -1,8 +1,8 @@
 """
 Lambda function for putting workout links into the workout link queue.
 Requires the following environment variables:
-    - WORKOUTLINK_QUEUE_URL
-    - WORKOUT_SCRAPE_TRIGGER_QUEUE_URL: url of the workout link SQS queue
+    - WORKOUT_SCRAPER_QUEUE
+    - WORKOUT_SCRAPER_TRIGGER_QUEUE: url of the workout link SQS queue
     - WORKOUT_LINKS_BUCKET: name of the s3 bucket
 """
 
@@ -14,8 +14,8 @@ import boto3
 
 from sheiva_cloud.sheiva_aws.s3 import SHEIVA_SCRAPE_BUCKET
 from sheiva_cloud.sheiva_aws.sqs import (
-    WORKOUT_SCRAPE_TRIGGER_QUEUE_URL,
-    WORKOUTLINK_QUEUE_URL,
+    WORKOUT_SCRAPER_TRIGGER_QUEUE,
+    WORKOUT_SCRAPER_QUEUE,
 )
 from sheiva_cloud.sheiva_aws.sqs.clients import StandardClient
 from sheiva_cloud.sheiva_aws.sqs.message_parsers import (
@@ -134,7 +134,7 @@ def handler(event, context):
     sqs_client = boto3_session.client("sqs")
 
     workout_link_queue = StandardClient(
-        queue_url=WORKOUTLINK_QUEUE_URL, sqs_client=sqs_client
+        queue_url=WORKOUT_SCRAPER_QUEUE, sqs_client=sqs_client
     )
 
     workout_scrape_trigger_messages = process_sqs_event(
@@ -159,7 +159,7 @@ def handler(event, context):
 
     print("Deleting workout scrape trigger message")
     workout_trigger_scrape_queue = StandardClient(
-        queue_url=WORKOUT_SCRAPE_TRIGGER_QUEUE_URL, sqs_client=sqs_client
+        queue_url=WORKOUT_SCRAPER_TRIGGER_QUEUE, sqs_client=sqs_client
     )
     workout_trigger_scrape_queue.delete_message(receipt_handle=receipt_handle)
 

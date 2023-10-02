@@ -12,9 +12,9 @@ from kuda.scrapers import parse_workout_html
 
 from sheiva_cloud.sheiva_aws.aws_lambda.containers.functions import process_scrape_event
 from sheiva_cloud.sheiva_aws.sqs import (
-    WORKOUTLINK_DEADLETTER_QUEUE_URL as DEADLETTER_QUEUE,
+    WORKOUT_SCRAPER_DEADLETTER_QUEUE as DEADLETTER_QUEUE,
 )
-from sheiva_cloud.sheiva_aws.sqs import WORKOUTLINK_QUEUE_URL as SOURCE_QUEUE
+from sheiva_cloud.sheiva_aws.sqs import WORKOUT_SCRAPER_QUEUE as SOURCE_QUEUE
 from sheiva_cloud.sheiva_aws.sqs.clients.standard import StandardClient
 from sheiva_cloud.sheiva_aws.sqs.message_parsers import scrape_message_parser
 from sheiva_cloud.sheiva_aws.sqs.utils import process_sqs_event, process_sqs_response

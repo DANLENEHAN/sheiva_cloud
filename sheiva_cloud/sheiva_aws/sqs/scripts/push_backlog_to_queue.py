@@ -2,13 +2,13 @@ import json
 
 import boto3
 
-from sheiva_cloud.sheiva_aws.sqs import WORKOUTLINK_QUEUE_URL
+from sheiva_cloud.sheiva_aws.sqs import WORKOUT_SCRAPER_QUEUE
 from sheiva_cloud.sheiva_aws.sqs.clients import StandardClient
 
 
 def main(sqs_client: boto3.client, backlog_file: str):
     queue = StandardClient(
-        queue_url=WORKOUTLINK_QUEUE_URL,
+        queue_url=WORKOUT_SCRAPER_QUEUE,
         sqs_client=sqs_client,
     )
 

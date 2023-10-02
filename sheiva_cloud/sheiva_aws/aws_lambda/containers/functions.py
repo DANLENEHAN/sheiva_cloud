@@ -57,5 +57,5 @@ def process_scrape_event(
                     }
                 },
             }
-        ],
+        ] if failed_scrapes else [],
     }

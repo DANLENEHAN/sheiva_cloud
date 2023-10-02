@@ -10,6 +10,7 @@ from sheiva_cloud.sheiva_aws.sqs import ScraperMessage, SqsResponse
 
 
 def process_scrape_event(
+    s3_client: boto3.client,
     message: ScraperMessage,
     html_parser: Callable,
     async_batch_size: int = 10,
@@ -17,13 +18,11 @@ def process_scrape_event(
     """
     Processes a scrape event.
     Args:
+        s3_client (boto3.client): s3 client
         message (ScraperMessage): the message to be processed
         html_parser (Callable): html parser
         async_batch_size (int, optional): batch size for async scraping.
     """
-
-    boto3_session = boto3.Session()
-    s3_client = boto3_session.client("s3")
 
     results = scrape_urls(
         urls=message["urls"],

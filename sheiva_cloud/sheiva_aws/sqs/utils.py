@@ -2,7 +2,7 @@
 Module for generic SQS utilities.
 """
 
-from typing import Callable, Dict, List, Type
+from typing import Callable, List, Type
 
 import boto3
 
@@ -16,7 +16,7 @@ def process_sqs_event(
     Takes SQS message event and extracts all the message bodies
     into a parsed list.
     Args:
-        sqs_body (SqsEvent): body of SQS message
+        sqs_event (SqsEvent): SQS event
         parse_function (Callable): function to parse message
     Returns:
         List: list of parsed messages

@@ -3,6 +3,7 @@ Module for custom SQS utilities.
 """
 
 import json
+from typing import Tuple
 
 from sheiva_cloud.sheiva_aws.sqs import (
     FileTransformerMessage,
@@ -55,3 +56,23 @@ def file_transformer_message_parser(
             ]["stringValue"],
         }
     )
+
+
+def parse_workout_scrape_trigger_message(
+    message: ReceivedSqsMessage,
+) -> Tuple[int, str]:
+    """
+    Parses the workout scrape trigger message.
+    Args:
+        message (Dict): message from the workout scrape trigger queue
+    Returns:
+        int: number of workout links to scrape
+    """
+
+    print("Parsing workout scrape trigger message")
+    try:
+        return int(message["body"]), message["receiptHandle"]
+    # pylint: disable=broad-except
+    except Exception as e:
+        print(f"Error parsing workout scrape trigger message: {repr(e)}")
+        return 0, ""

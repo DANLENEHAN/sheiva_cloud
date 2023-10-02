@@ -1,7 +1,8 @@
 """
 Lambda function for putting messages on the Workout Scraper Trigger SQS queue.
 Requires the following environment variables:
-    - NUMBER_WORKOUT_LINKS_PER_MESSAGE: number of workout links to put in each message
+    - NUMBER_WORKOUT_LINKS_PER_MESSAGE: number of workout
+        links to put in each message
 """
 
 import os
@@ -41,7 +42,8 @@ def handler(event, context):
 
     print(f"Putting message on queue: '{WORKOUT_SCRAPE_TRIGGER_QUEUE_URL}'")
     print(
-        f"Number of workout links per message: {NUMBER_WORKOUT_LINKS_PER_MESSAGE}"
+        "Number of workout links per message: "
+        f"{NUMBER_WORKOUT_LINKS_PER_MESSAGE}"
     )
     queue.send_message(message_body=NUMBER_WORKOUT_LINKS_PER_MESSAGE)
 

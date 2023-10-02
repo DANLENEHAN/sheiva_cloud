@@ -8,38 +8,22 @@ Requires the following environment variables:
 
 import json
 import os
-from typing import Dict, List, Tuple
+from typing import List
 
 import boto3
 
 from sheiva_cloud.sheiva_aws.s3 import SHEIVA_SCRAPE_BUCKET
-from sheiva_cloud.sheiva_aws.s3.functions import check_bucket_exists
 from sheiva_cloud.sheiva_aws.sqs import (
     WORKOUT_SCRAPE_TRIGGER_QUEUE_URL,
     WORKOUTLINK_QUEUE_URL,
 )
 from sheiva_cloud.sheiva_aws.sqs.clients import StandardClient
+from sheiva_cloud.sheiva_aws.sqs.message_parsers import (
+    parse_workout_scrape_trigger_message,
+)
 from sheiva_cloud.sheiva_aws.sqs.utils import process_sqs_event
 
 GENDER = os.getenv("GENDER", "")
-
-
-def parse_workout_scrape_trigger_message(message: Dict) -> Tuple[int, str]:
-    """
-    Parses the workout scrape trigger message.
-    Args:
-        message (Dict): message from the workout scrape trigger queue
-    Returns:
-        int: number of workout links to scrape
-    """
-
-    print("Parsing workout scrape trigger message")
-    try:
-        return int(message["body"]), message["receiptHandle"]
-    # pylint: disable=broad-except
-    except Exception as e:
-        print(f"Error parsing workout scrape trigger message: {repr(e)}")
-        return 0, ""
 
 
 def get_workout_link_bucket_dirs(s3_client: boto3.client) -> List:
@@ -149,7 +133,6 @@ def handler(event, context):
     s3_client = boto3_session.client("s3")
     sqs_client = boto3_session.client("sqs")
 
-    check_bucket_exists(s3_client=s3_client, bucket_name=SHEIVA_SCRAPE_BUCKET)
     workout_link_queue = StandardClient(
         queue_url=WORKOUTLINK_QUEUE_URL, sqs_client=sqs_client
     )

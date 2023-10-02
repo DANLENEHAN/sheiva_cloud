@@ -1,22 +1,23 @@
-from typing import Dict, List, TypedDict, Type
+from typing import Dict, List, TypedDict
 
-    
+
 class ReceivedSqsMessage(TypedDict):
     """
     Structure of an SQS message
     as received from an SQS event.
     """
-    
+
     receiptHandle: str
     body: str
     messageAttributes: Dict
+
 
 class SqsMessage(TypedDict):
     """
     Structure of an SQS message
     to send to a queue.
     """
-    
+
     message_body: str
     message_attributes: Dict
 
@@ -26,7 +27,8 @@ class SqsEvent(TypedDict):
     Structure of an SQS event.
     """
 
-    Records: List[ReceivedSqsMessage]    
+    Records: List[ReceivedSqsMessage]
+
 
 class ParsedSqsMessage(TypedDict):
     """
@@ -35,6 +37,7 @@ class ParsedSqsMessage(TypedDict):
     """
 
     receiptHandle: str
+
 
 class SqsResponse(TypedDict):
     """
@@ -45,9 +48,10 @@ class SqsResponse(TypedDict):
     messages_to_dlq: messages to be sent
         to the dead-letter queue
     """
-    
+
     receipt_handles_to_delete: List[str]
     messages_to_dlq: List[SqsMessage]
+
 
 class ScraperMessage(ParsedSqsMessage):
     """

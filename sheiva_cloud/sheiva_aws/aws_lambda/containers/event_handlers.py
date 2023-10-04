@@ -104,7 +104,7 @@ class HighriseWorkoutTransformEvent(FileTransformEvent):
 
         for component_key, components in parsed_results.items():
             bucket_key = f"{self.message['s3_output_bucket_key']}/{component_key}/{file_name}.csv"
-            pd.DataFrame(components).to_csv(bucket_key, index=False)
+            pd.DataFrame(components).to_csv(f"s3://{SHEIVA_SCRAPE_BUCKET}/{bucket_key}", index=False)
 
 
 def process_scrape_event(

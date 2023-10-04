@@ -10,7 +10,9 @@ import os
 import boto3
 from kuda.scrapers import parse_workout_html
 
-from sheiva_cloud.sheiva_aws.aws_lambda.containers.functions import process_scrape_event
+from sheiva_cloud.sheiva_aws.aws_lambda.containers.event_handlers import (
+    process_scrape_event,
+)
 from sheiva_cloud.sheiva_aws.sqs import (
     WORKOUT_SCRAPER_DEADLETTER_QUEUE as DEADLETTER_QUEUE,
 )

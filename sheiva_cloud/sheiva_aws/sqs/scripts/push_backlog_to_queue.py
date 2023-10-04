@@ -7,6 +7,10 @@ from sheiva_cloud.sheiva_aws.sqs.clients import StandardClient
 
 
 def main(sqs_client: boto3.client, backlog_file: str):
+    """
+    Pushes backlog to queue.
+    """
+
     queue = StandardClient(
         queue_url=WORKOUT_SCRAPER_QUEUE,
         sqs_client=sqs_client,
@@ -15,7 +19,7 @@ def main(sqs_client: boto3.client, backlog_file: str):
     f = open(backlog_file, "r")
     message_dicts = json.load(f)
     print(len(message_dicts))
-    for index, message_dict in enumerate(message_dicts):
+    for _, message_dict in enumerate(message_dicts):
         queue.send_message(
             message_body=json.dumps(message_dict["body"]),
             message_attributes={

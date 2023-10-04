@@ -14,8 +14,8 @@ import boto3
 
 from sheiva_cloud.sheiva_aws.s3 import SHEIVA_SCRAPE_BUCKET
 from sheiva_cloud.sheiva_aws.sqs import (
-    WORKOUT_SCRAPER_TRIGGER_QUEUE,
     WORKOUT_SCRAPER_QUEUE,
+    WORKOUT_SCRAPER_TRIGGER_QUEUE,
 )
 from sheiva_cloud.sheiva_aws.sqs.clients import StandardClient
 from sheiva_cloud.sheiva_aws.sqs.message_parsers import (

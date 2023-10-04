@@ -48,11 +48,11 @@ def file_transformer_message_parser(
     return FileTransformerMessage(
         {
             "receiptHandle": message["receiptHandle"],
-            "input_bucket_key": message["messageAttributes"][
-                "input_bucket_key"
-            ]["stringValue"],
-            "output_bucket_key": message["messageAttributes"][
-                "output_bucket_key"
+            "s3_input_file": message["messageAttributes"]["s3_input_file"][
+                "stringValue"
+            ],
+            "s3_output_bucket_key": message["messageAttributes"][
+                "s3_output_bucket_key"
             ]["stringValue"],
         }
     )

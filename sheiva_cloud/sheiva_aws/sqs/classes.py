@@ -68,10 +68,10 @@ class ScraperMessage(ParsedSqsMessage):
 class FileTransformerMessage(ParsedSqsMessage):
     """
     Sqs Message structure for a file transformer.
-    s3_input_path: source directory of
-        the file to be parsed.
-    s3_output_path: destination directory
+    s3_input_file: path of the source file to be parsed.
+    s3_s3_output_bucket_key: destination for the transformed
+        data.
     """
 
-    input_bucket_key: str
-    output_bucket_key: str
+    s3_input_file: str
+    s3_output_bucket_key: str

@@ -2,8 +2,9 @@
 name = "sheiva_cloud"
 version = "1.0.0"
 dependencies = [
-	"boto3==1.28.40",
-	"awscli==1.29.40",
+	"s3fs",
+	"boto3",
+	"awscli",
 ]
 
 [tool.setuptools.packages]

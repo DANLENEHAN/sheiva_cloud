@@ -13,7 +13,7 @@ from sheiva_cloud.sheiva_aws.sqs import WORKOUT_FILE_TRANSFORM_QUEUE
 from sheiva_cloud.sheiva_aws.sqs.clients import StandardClient
 from sheiva_cloud.sheiva_aws.s3 import SHEIVA_SCRAPE_BUCKET
 
-TRANSFORM_LIMIT = os.getenv("TRANSFORM_LIMIT", None)
+TRANSFORM_LIMIT = os.getenv("TRANSFORM_LIMIT")
 
 
 def get_scraped_file_paths(s3_client: boto3.client) -> List:
@@ -86,7 +86,6 @@ def send_messages_to_transform_queue(
         queue_url=WORKOUT_FILE_TRANSFORM_QUEUE, sqs_client=sqs_client
     )
     for message in files_to_transform:
-        print(message)
         transform_queue.send_message(
             message_body="Empty Body",
             message_attributes={
@@ -129,7 +128,3 @@ def handler(event, context):
     )
 
     print("Done")
-
-
-if __name__ == "__main__":
-    handler(event=None, context=None)

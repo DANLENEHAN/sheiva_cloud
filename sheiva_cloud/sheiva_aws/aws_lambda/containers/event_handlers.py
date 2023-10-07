@@ -14,9 +14,7 @@ from sheiva_cloud.sheiva_aws.sqs import (
     SqsEvent,
     SqsResponse,
 )
-from sheiva_cloud.sheiva_aws.sqs.message_parsers import (
-    file_transformer_message_parser,
-)
+from sheiva_cloud.sheiva_aws.sqs.message_parsers import file_transformer_message_parser
 from sheiva_cloud.sheiva_aws.sqs.utils import process_sqs_event
 
 

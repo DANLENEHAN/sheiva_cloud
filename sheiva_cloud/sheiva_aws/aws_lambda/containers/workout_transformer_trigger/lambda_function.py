@@ -4,16 +4,16 @@ transform queue.
 """
 
 import os
-from typing import List
 from random import sample
+from typing import List
 
 import boto3
 
+from sheiva_cloud.sheiva_aws.s3 import SHEIVA_SCRAPE_BUCKET
 from sheiva_cloud.sheiva_aws.sqs import WORKOUT_FILE_TRANSFORM_QUEUE
 from sheiva_cloud.sheiva_aws.sqs.clients import StandardClient
-from sheiva_cloud.sheiva_aws.s3 import SHEIVA_SCRAPE_BUCKET
 
-TRANSFORM_LIMIT = os.getenv("TRANSFORM_LIMIT")
+TRANSFORM_LIMIT = int(os.getenv("TRANSFORM_LIMIT", "10"))
 
 
 def get_scraped_file_paths(s3_client: boto3.client) -> List:
@@ -68,10 +68,9 @@ def get_transform_canidates(s3_client: boto3.client) -> List[str]:
 
     scraped_files = get_scraped_file_paths(s3_client=s3_client)
     print(f"Retreived {len(scraped_files)} scraped file bucket keys")
-    transformed_files_uuids = [
-        key.split(".")[0]
-        for key in get_transformed_file_paths(s3_client=s3_client)
-    ]
+    transformed_files = get_transformed_file_paths(s3_client=s3_client)
+    print(f"Retreived {len(transformed_files)} transformed file uuids")
+    transformed_files_uuids = [key.split(".")[0] for key in transformed_files]
     return [
         key
         for key in scraped_files
@@ -113,9 +112,6 @@ def handler(event, context):
     boto3_session = boto3.Session()
     s3_client = boto3_session.client("s3")
     sqs_client = boto3_session.client("sqs")
-
-    if TRANSFORM_LIMIT is None:
-        raise ValueError("TRANSFORM_LIMIT env variable not set")
 
     files_to_transform = sample(
         get_transform_canidates(s3_client=s3_client), TRANSFORM_LIMIT

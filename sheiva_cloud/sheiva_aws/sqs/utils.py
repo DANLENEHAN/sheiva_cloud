@@ -6,11 +6,7 @@ from typing import Callable, List
 
 import boto3
 
-from sheiva_cloud.sheiva_aws.sqs import (
-    ParsedSqsMessageType,
-    SqsEvent,
-    SqsResponse,
-)
+from sheiva_cloud.sheiva_aws.sqs import ParsedSqsMessageType, SqsEvent, SqsResponse
 
 
 def process_sqs_event(

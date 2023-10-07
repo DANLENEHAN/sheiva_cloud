@@ -19,7 +19,10 @@ from sheiva_cloud.sheiva_aws.sqs import (
 from sheiva_cloud.sheiva_aws.sqs import WORKOUT_SCRAPER_QUEUE as SOURCE_QUEUE
 from sheiva_cloud.sheiva_aws.sqs.clients.standard import StandardClient
 from sheiva_cloud.sheiva_aws.sqs.message_parsers import scrape_message_parser
-from sheiva_cloud.sheiva_aws.sqs.utils import process_sqs_event, process_sqs_response
+from sheiva_cloud.sheiva_aws.sqs.utils import (
+    process_sqs_event,
+    process_sqs_response,
+)
 
 # async batch size
 ASYNC_BATCH_SIZE = int(os.getenv("ASYNC_BATCH_SIZE", "10"))

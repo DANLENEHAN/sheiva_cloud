@@ -58,8 +58,3 @@ cron(0/1 * * * ? *)
 
 # Uninstall everything in an enviroment
 pip freeze | grep -v "^-e" | xargs pip uninstall -y
-
-
-
-highrise/workout-data/male/age_16_20/4762d6a3-c016-452a-9f12-15618df80c3d.json
-highrise/test

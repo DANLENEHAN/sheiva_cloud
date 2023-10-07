@@ -4,7 +4,11 @@ four seperate csv files which aim to mimic the Grau ORM model structures
 """
 
 import boto3
-from sheiva_cloud.sheiva_aws.aws_lambda.containers.event_handlers import HighriseWorkoutTransformEvent
+
+from sheiva_cloud.sheiva_aws.aws_lambda.containers.event_handlers import (
+    HighriseWorkoutTransformEvent,
+)
+
 
 # pylint: disable=unused-argument
 def handler(event, context):
@@ -18,6 +22,4 @@ def handler(event, context):
     boto3_session = boto3.Session()
     s3_client = boto3_session.client("s3")
 
-    HighriseWorkoutTransformEvent(
-        event=event, s3_client=s3_client
-    ).process()
+    HighriseWorkoutTransformEvent(event=event, s3_client=s3_client).process()

@@ -1,39 +1,39 @@
 import json
-from typing import Callable, Dict, List, Any, Tuple
+from typing import Any, Callable, Dict, List, Tuple
 from uuid import uuid4
-import pandas as pd
 
 import boto3
-from kuda.scrapers import scrape_urls
-
+import pandas as pd
 from kuda.data_pipelining.highrise.file_transformers import parse_workout_tree
+from kuda.scrapers import scrape_urls
 
 from sheiva_cloud.sheiva_aws.s3 import SHEIVA_SCRAPE_BUCKET
 from sheiva_cloud.sheiva_aws.sqs import (
     FileTransformerMessage,
-    SqsEvent,
     ScraperMessage,
+    SqsEvent,
     SqsResponse,
 )
-from sheiva_cloud.sheiva_aws.sqs.message_parsers import file_transformer_message_parser
+from sheiva_cloud.sheiva_aws.sqs.message_parsers import (
+    file_transformer_message_parser,
+)
 from sheiva_cloud.sheiva_aws.sqs.utils import process_sqs_event
+
 
 class FileTransformEvent:
     """
     Represents a file transform event.
     """
 
-    def __init__(
-        self, event: SqsEvent, s3_client: boto3.client
-    ):
+    def __init__(self, event: SqsEvent, s3_client: boto3.client):
         """
         Args:
-            message (FileTransformerMessage): message
+            event (SqsEvent): sqs event object
             s3_client (boto3.client): s3 client
         """
 
         self.s3_client = s3_client
-        self.message = process_sqs_event(
+        self.message: FileTransformerMessage = process_sqs_event(
             sqs_event=event,
             parse_function=file_transformer_message_parser,
         )[0]
@@ -42,21 +42,18 @@ class FileTransformEvent:
         """
         Processes the event.
         """
-        pass
 
     def parse_source_file(self):
         """
         Parses the source file from the
         's3_input_file' of the message.
         """
-        pass
 
     def store_parsed_results(self, file_name: str, parsed_results: Any):
         """
         Stores the parsed results in the
         's3_output_bucket_key' of the message.
         """
-        pass
 
 
 class HighriseWorkoutTransformEvent(FileTransformEvent):
@@ -73,7 +70,6 @@ class HighriseWorkoutTransformEvent(FileTransformEvent):
             file_name=file_name, parsed_results=parsed_results
         )
         return "Success"
-
 
     def parse_source_file(self) -> Tuple[str, Dict[str, List]]:
         """
@@ -98,13 +94,13 @@ class HighriseWorkoutTransformEvent(FileTransformEvent):
         Args:
             file_name (str): file name
             parsed_results (Dict[str, List]): parsed results
-        Returns:
-            str: success message
         """
 
         for component_key, components in parsed_results.items():
             bucket_key = f"{self.message['s3_output_bucket_key']}/{component_key}/{file_name}.csv"
-            pd.DataFrame(components).to_csv(f"s3://{SHEIVA_SCRAPE_BUCKET}/{bucket_key}", index=False)
+            pd.DataFrame(components).to_csv(
+                f"s3://{SHEIVA_SCRAPE_BUCKET}/{bucket_key}", index=False
+            )
 
 
 def process_scrape_event(

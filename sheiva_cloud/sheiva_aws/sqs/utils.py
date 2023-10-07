@@ -2,16 +2,20 @@
 Module for generic SQS utilities.
 """
 
-from typing import Callable, List, Type
+from typing import Callable, List
 
 import boto3
 
-from sheiva_cloud.sheiva_aws.sqs import ParsedSqsMessage, SqsEvent, SqsResponse
+from sheiva_cloud.sheiva_aws.sqs import (
+    ParsedSqsMessageType,
+    SqsEvent,
+    SqsResponse,
+)
 
 
 def process_sqs_event(
     sqs_event: SqsEvent, parse_function: Callable
-) -> List[Type[ParsedSqsMessage]]:
+) -> List[ParsedSqsMessageType]:
     """
     Takes SQS message event and extracts all the message bodies
     into a parsed list.
@@ -19,7 +23,7 @@ def process_sqs_event(
         sqs_event (SqsEvent): SQS event
         parse_function (Callable): function to parse message
     Returns:
-        List: list of parsed messages
+        List[ParsedSqsMessageType]: list of parsed SQS messages
     """
 
     parsed_messages = []

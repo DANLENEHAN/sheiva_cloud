@@ -125,10 +125,13 @@ def process_scrape_event(
     failed_scrapes = []
     scraped_data = []
     for result in results:
+        # Will return the url if the scrape failed
         if isinstance(result, str):
             failed_scrapes.append(result)
         else:
-            scraped_data.append(result)
+            # Can be an empty dict e.g. Workout Inaccessible
+            if result:
+                scraped_data.append(result)
 
     bucket_key = message["bucket_key"]
     s3_client.put_object(

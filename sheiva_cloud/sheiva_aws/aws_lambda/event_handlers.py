@@ -7,35 +7,27 @@ import pandas as pd
 from kuda.data_pipelining.highrise.file_transformers import parse_workout_tree
 from kuda.scrapers import scrape_urls
 
-from sheiva_cloud.sheiva_aws.s3 import SHEIVA_SCRAPE_BUCKET
-from sheiva_cloud.sheiva_aws.sqs import (
-    FileTransformerMessage,
-    ScraperMessage,
-    SqsEvent,
-    SqsResponse,
+from sheiva_cloud import (
+    s3,
+    sqs,
 )
-from sheiva_cloud.sheiva_aws.sqs.message_parsers import (
-    file_transformer_message_parser,
-)
-from sheiva_cloud.sheiva_aws.sqs.utils import process_sqs_event
-
 
 class FileTransformEvent:
     """
     Represents a file transform event.
     """
 
-    def __init__(self, event: SqsEvent, s3_client: boto3.client):
+    def __init__(self, event: sqs.SqsEvent, s3_client: boto3.client):
         """
         Args:
-            event (SqsEvent): sqs event object
+            event (sqs.SqsEvent): sqs event object
             s3_client (boto3.client): s3 client
         """
 
         self.s3_client = s3_client
-        self.message: FileTransformerMessage = process_sqs_event(
+        self.message: sqs.FileTransformerMessage = sqs.utils.process_sqs_event(
             sqs_event=event,
-            parse_function=file_transformer_message_parser,
+            parse_function=sqs.message_parsers.file_transformer_message,
         )[0]
 
     def process(self):
@@ -80,7 +72,7 @@ class HighriseWorkoutTransformEvent(FileTransformEvent):
         """
         file_name = self.message["s3_input_file"].split("/")[-1].split(".")[0]
         response = self.s3_client.get_object(
-            Bucket=SHEIVA_SCRAPE_BUCKET, Key=self.message["s3_input_file"]
+            Bucket=s3.SHEIVA_SCRAPE_BUCKET, Key=self.message["s3_input_file"]
         )
         workouts = json.loads(response["Body"].read().decode("utf-8"))
         parsed_results = parse_workout_tree(workouts=workouts)
@@ -102,21 +94,21 @@ class HighriseWorkoutTransformEvent(FileTransformEvent):
                 f"{component_key}/{file_name}.csv"
             )
             pd.DataFrame(components).to_csv(
-                f"s3://{SHEIVA_SCRAPE_BUCKET}/{bucket_key}", index=False
+                f"s3://{s3.SHEIVA_SCRAPE_BUCKET}/{bucket_key}", index=False
             )
 
 
 def process_scrape_event(
     s3_client: boto3.client,
-    message: ScraperMessage,
+    message: sqs.ScraperMessage,
     html_parser: Callable,
     async_batch_size: int = 10,
-) -> SqsResponse:
+) -> sqs.SqsResponse:
     """
     Processes a scrape event.
     Args:
         s3_client (boto3.client): s3 client
-        message (ScraperMessage): the message to be processed
+        message (sqs.ScraperMessage): the message to be processed
         html_parser (Callable): html parser
         async_batch_size (int, optional): batch size for async scraping.
     """
@@ -140,7 +132,7 @@ def process_scrape_event(
 
     bucket_key = message["bucket_key"]
     s3_client.put_object(
-        Bucket=SHEIVA_SCRAPE_BUCKET,
+        Bucket=s3.SHEIVA_SCRAPE_BUCKET,
         Key=f"{bucket_key}/{uuid4()}.json",
         Body=json.dumps(scraped_data, indent=4),
     )

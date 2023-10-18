@@ -12,16 +12,7 @@ from typing import List
 
 import boto3
 
-from sheiva_cloud.sheiva_aws.s3 import SHEIVA_SCRAPE_BUCKET
-from sheiva_cloud.sheiva_aws.sqs import (
-    WORKOUT_SCRAPER_QUEUE,
-    WORKOUT_SCRAPER_TRIGGER_QUEUE,
-)
-from sheiva_cloud.sheiva_aws.sqs.clients import StandardClient
-from sheiva_cloud.sheiva_aws.sqs.message_parsers import (
-    parse_workout_scrape_trigger_message,
-)
-from sheiva_cloud.sheiva_aws.sqs.utils import process_sqs_event
+from sheiva_cloud import s3, sqs
 
 GENDER = os.getenv("GENDER", "")
 
@@ -35,7 +26,7 @@ def get_workout_link_bucket_dirs(s3_client: boto3.client) -> List:
 
     print("Getting workout link bucket dirs")
     paginator = s3_client.get_paginator("list_objects_v2")
-    page_iterator = paginator.paginate(Bucket=SHEIVA_SCRAPE_BUCKET)
+    page_iterator = paginator.paginate(Bucket=s3.SHEIVA_SCRAPE_BUCKET)
     return [
         f["Key"]
         for f in page_iterator.search(
@@ -94,7 +85,7 @@ def get_and_post_workout_links(
     for bucket_dir in workout_link_bucket_dirs:
         print(f"Getting workout links from bucket: {bucket_dir}")
         bucket = s3_client.get_object(
-            Bucket=SHEIVA_SCRAPE_BUCKET, Key=bucket_dir
+            Bucket=s3.SHEIVA_SCRAPE_BUCKET, Key=bucket_dir
         )
         bucket_contents = json.loads(bucket["Body"].read().decode("utf-8"))
         workout_links = bucket_contents[:num_workout_links_to_scrape]
@@ -111,7 +102,7 @@ def get_and_post_workout_links(
         )
         bucket_contents = bucket_contents[num_workout_links_to_scrape:]
         s3_client.put_object(
-            Bucket=SHEIVA_SCRAPE_BUCKET,
+            Bucket=s3.SHEIVA_SCRAPE_BUCKET,
             Key=bucket_dir,
             Body=json.dumps(bucket_contents),
         )
@@ -133,12 +124,13 @@ def handler(event, context):
     s3_client = boto3_session.client("s3")
     sqs_client = boto3_session.client("sqs")
 
-    workout_link_queue = StandardClient(
-        queue_url=WORKOUT_SCRAPER_QUEUE, sqs_client=sqs_client
+    workout_link_queue = sqs.StandardSqsClient(
+        queue_url=sqs.WORKOUT_SCRAPER_QUEUE, sqs_client=sqs_client
     )
 
-    workout_scrape_trigger_messages = process_sqs_event(
-        sqs_event=event, parse_function=parse_workout_scrape_trigger_message
+    workout_scrape_trigger_messages = sqs.utils.process_sqs_event(
+        sqs_event=event,
+        parse_function=sqs.message_parsers.workout_scrape_trigger_msg,
     )
     # Should only be one message
     (
@@ -158,8 +150,8 @@ def handler(event, context):
     )
 
     print("Deleting workout scrape trigger message")
-    workout_trigger_scrape_queue = StandardClient(
-        queue_url=WORKOUT_SCRAPER_TRIGGER_QUEUE, sqs_client=sqs_client
+    workout_trigger_scrape_queue = sqs.StandardSqsClient(
+        queue_url=sqs.WORKOUT_SCRAPER_TRIGGER_QUEUE, sqs_client=sqs_client
     )
     workout_trigger_scrape_queue.delete_message(receipt_handle=receipt_handle)
 

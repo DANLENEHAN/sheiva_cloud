@@ -5,24 +5,22 @@ Module for custom SQS utilities.
 import json
 from typing import Tuple
 
-from sheiva_cloud.sheiva_aws.sqs import (
-    FileTransformerMessage,
-    ReceivedSqsMessage,
-    ScraperMessage,
-)
+from sheiva_cloud import sqs
 
 
-def scrape_message_parser(message: ReceivedSqsMessage) -> ScraperMessage:
+def scrape_message_parser(
+    message: sqs.ReceivedSqsMessage,
+) -> sqs.ScraperMessage:
     """
     Parses a scrape message from the SQS queue. Follows
-    the ScraperMessage structure.
+    the sqs.ScraperMessage structure.
     Args:
-        message (ReceivedSqsMessage): message from the SQS queue
+        message (sqs.ReceivedSqsMessage): message from the SQS queue
     Returns:
-        ScraperMessage: parsed message
+        sqs.ScraperMessage: parsed message
     """
 
-    return ScraperMessage(
+    return sqs.ScraperMessage(
         {
             "urls": json.loads(message["body"]),
             "receiptHandle": message["receiptHandle"],
@@ -33,19 +31,19 @@ def scrape_message_parser(message: ReceivedSqsMessage) -> ScraperMessage:
     )
 
 
-def file_transformer_message_parser(
-    message: ReceivedSqsMessage,
-) -> FileTransformerMessage:
+def file_transformer_message(
+    message: sqs.ReceivedSqsMessage,
+) -> sqs.FileTransformerMessage:
     """
     Parses a file transformer message from the SQS queue. Follows
-    the FileTransformerMessage structure.
+    the sqs.FileTransformerMessage structure.
     Args:
-        message (ReceivedSqsMessage): message from the SQS queue
+        message (sqs.ReceivedSqsMessage): message from the SQS queue
     Returns:
-        FileTransformerMessage: parsed message
+        sqs.FileTransformerMessage: parsed message
     """
 
-    return FileTransformerMessage(
+    return sqs.FileTransformerMessage(
         {
             "receiptHandle": message["receiptHandle"],
             "s3_input_file": message["messageAttributes"]["s3_input_file"][
@@ -58,8 +56,8 @@ def file_transformer_message_parser(
     )
 
 
-def parse_workout_scrape_trigger_message(
-    message: ReceivedSqsMessage,
+def workout_scrape_trigger_msg(
+    message: sqs.ReceivedSqsMessage,
 ) -> Tuple[int, str]:
     """
     Parses the workout scrape trigger message.

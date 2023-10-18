@@ -9,9 +9,7 @@ from typing import List
 
 import boto3
 
-from sheiva_cloud.sheiva_aws.s3 import SHEIVA_SCRAPE_BUCKET
-from sheiva_cloud.sheiva_aws.sqs import WORKOUT_FILE_TRANSFORM_QUEUE
-from sheiva_cloud.sheiva_aws.sqs.clients import StandardClient
+from sheiva_cloud import s3, sqs
 
 TRANSFORM_LIMIT = int(os.getenv("TRANSFORM_LIMIT", "10"))
 
@@ -26,7 +24,7 @@ def get_scraped_file_paths(s3_client: boto3.client) -> List:
 
     print("Getting scraped workout files")
     paginator = s3_client.get_paginator("list_objects_v2")
-    page_iterator = paginator.paginate(Bucket=SHEIVA_SCRAPE_BUCKET)
+    page_iterator = paginator.paginate(Bucket=s3.SHEIVA_SCRAPE_BUCKET)
     return [
         f["Key"]
         for f in page_iterator.search(
@@ -46,7 +44,7 @@ def get_transformed_file_paths(s3_client: boto3.client) -> List[str]:
 
     print("Getting transformed workout files")
     paginator = s3_client.get_paginator("list_objects_v2")
-    page_iterator = paginator.paginate(Bucket=SHEIVA_SCRAPE_BUCKET)
+    page_iterator = paginator.paginate(Bucket=s3.SHEIVA_SCRAPE_BUCKET)
     return [
         f["Key"]
         for f in page_iterator.search(
@@ -85,8 +83,8 @@ def send_messages_to_transform_queue(
     Sends messages to the transform queue.
     """
 
-    transform_queue = StandardClient(
-        queue_url=WORKOUT_FILE_TRANSFORM_QUEUE, sqs_client=sqs_client
+    transform_queue = sqs.StandardSqsClient(
+        queue_url=sqs.WORKOUT_FILE_TRANSFORM_QUEUE, sqs_client=sqs_client
     )
     for message in files_to_transform:
         transform_queue.send_message(

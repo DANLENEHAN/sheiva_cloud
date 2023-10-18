@@ -9,8 +9,7 @@ import os
 
 import boto3
 
-from sheiva_cloud.sheiva_aws.sqs import WORKOUT_SCRAPER_TRIGGER_QUEUE
-from sheiva_cloud.sheiva_aws.sqs.clients import StandardClient
+from sheiva_cloud import sqs
 
 NUMBER_WORKOUT_LINKS_PER_MESSAGE = os.getenv(
     "NUMBER_WORKOUT_LINKS_PER_MESSAGE", None
@@ -31,8 +30,8 @@ def handler(event, context):
     boto3_session = boto3.Session()
     sqs_client = boto3_session.client("sqs")
 
-    queue = StandardClient(
-        queue_url=WORKOUT_SCRAPER_TRIGGER_QUEUE, sqs_client=sqs_client
+    queue = sqs.StandardSqsClient(
+        queue_url=sqs.WORKOUT_SCRAPER_TRIGGER_QUEUE, sqs_client=sqs_client
     )
 
     if not NUMBER_WORKOUT_LINKS_PER_MESSAGE:
@@ -40,7 +39,7 @@ def handler(event, context):
             "'NUMBER_WORKOUT_LINKS_PER_MESSAGE' environment variable not set"
         )
 
-    print(f"Putting message on queue: '{WORKOUT_SCRAPER_TRIGGER_QUEUE}'")
+    print(f"Putting message on queue: '{sqs.WORKOUT_SCRAPER_TRIGGER_QUEUE}'")
     print(
         "Number of workout links per message: "
         f"{NUMBER_WORKOUT_LINKS_PER_MESSAGE}"

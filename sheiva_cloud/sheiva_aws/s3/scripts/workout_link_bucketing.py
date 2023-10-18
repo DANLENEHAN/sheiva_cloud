@@ -13,7 +13,7 @@ from typing import Dict
 import boto3
 import pandas as pd
 
-from sheiva_cloud.sheiva_aws.s3 import SHEIVA_SCRAPE_BUCKET as bucket_name
+from sheiva_cloud import s3
 
 GENDER = "male"
 
@@ -48,7 +48,8 @@ def get_all_workout_links(s3_client: boto3.client) -> pd.DataFrame:
     """
 
     res = s3_client.get_object(
-        Bucket=bucket_name, Key=f"{workout_link_dir}/all_workout_links.csv"
+        Bucket=s3.SHEIVA_SCRAPE_BUCKET,
+        Key=f"{workout_link_dir}/all_workout_links.csv",
     )
     print(
         "Retrieved all workout links from s3 bucket: "
@@ -76,14 +77,14 @@ def bucket_data(s3_client: boto3.client) -> Dict:
         if links:
             bucket_numbers_dict[f"{group}"] = len(links)
             s3_client.put_object(
-                Bucket=bucket_name,
+                Bucket=s3.SHEIVA_SCRAPE_BUCKET,
                 Key=f"{workout_link_dir}/{group}.json",
                 Body=json.dumps(links, indent=4),
             )
     print("Bucketing group: age_unknown")
     links = list(pdf[pdf.Age == -1].Links)
     s3_client.put_object(
-        Bucket=bucket_name,
+        Bucket=s3.SHEIVA_SCRAPE_BUCKET,
         Key=f"{workout_link_dir}/age_unknown.json",
         Body=json.dumps(links, indent=4),
     )
@@ -94,7 +95,7 @@ def bucket_data(s3_client: boto3.client) -> Dict:
 def get_all_workout_link_buckets(s3_client: boto3.client):
     print("Getting workout link bucket dirs")
     paginator = s3_client.get_paginator("list_objects_v2")
-    page_iterator = paginator.paginate(Bucket=bucket_name)
+    page_iterator = paginator.paginate(Bucket=s3.SHEIVA_SCRAPE_BUCKET)
     return [
         f["Key"]
         for f in page_iterator.search(
@@ -113,7 +114,7 @@ if __name__ == "__main__":
     checked_buckets = {}
     for key in workout_link_keys:
         print("Checking bucket: ", key)
-        res = s3_client.get_object(Bucket=bucket_name, Key=key)
+        res = s3_client.get_object(Bucket=s3.SHEIVA_SCRAPE_BUCKET, Key=key)
         obj = json.loads(res["Body"].read())
 
         bucket = key.split("/")[-1].split(".")[0]

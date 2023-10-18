@@ -1,6 +1,8 @@
 from typing import TypeVar
 
-from sheiva_cloud.sheiva_aws.sqs.classes import (
+import message_parsers
+import utils
+from classes import (
     FileTransformerMessage,
     ParsedSqsMessage,
     ReceivedSqsMessage,
@@ -8,6 +10,7 @@ from sheiva_cloud.sheiva_aws.sqs.classes import (
     SqsEvent,
     SqsResponse,
 )
+from clients import StandardClient as StandardSqsClient
 
 BASE_URL = "https://sqs.eu-west-1.amazonaws.com/381528172721"
 

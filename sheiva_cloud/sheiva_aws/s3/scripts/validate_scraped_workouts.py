@@ -10,7 +10,7 @@ from collections import defaultdict
 
 import boto3
 
-from sheiva_cloud.sheiva_aws.s3 import SHEIVA_SCRAPE_BUCKET as bucket_name
+from sheiva_cloud import s3
 
 scraped_workouts_dir = "highrise/workout-data/male"
 
@@ -19,7 +19,7 @@ boto3_session = boto3.Session()
 s3_client = boto3_session.client("s3")
 
 paginator = s3_client.get_paginator("list_objects_v2")
-page_iterator = paginator.paginate(Bucket=bucket_name)
+page_iterator = paginator.paginate(Bucket=s3.SHEIVA_SCRAPE_BUCKET)
 files = [
     f["Key"]
     for f in page_iterator.search(
@@ -33,8 +33,8 @@ files = [
 workouts_by_age_group = defaultdict(list)
 for file in files:
     age_group = file.split("/")[1]
-    bucket = s3_client.get_object(Bucket=bucket_name, Key=file)
-    print(f"Retrieved {file} from s3 bucket: {bucket_name}")
+    bucket = s3_client.get_object(Bucket=s3.SHEIVA_SCRAPE_BUCKET, Key=file)
+    print(f"Retrieved {file} from s3 bucket: {s3.SHEIVA_SCRAPE_BUCKET}")
     workouts = json.loads(bucket["Body"].read())
     workouts_by_age_group[age_group].extend(workouts)
 

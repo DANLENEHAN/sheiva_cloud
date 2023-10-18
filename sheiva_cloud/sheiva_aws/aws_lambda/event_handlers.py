@@ -7,10 +7,8 @@ import pandas as pd
 from kuda.data_pipelining.highrise.file_transformers import parse_workout_tree
 from kuda.scrapers import scrape_urls
 
-from sheiva_cloud import (
-    s3,
-    sqs,
-)
+from sheiva_cloud import s3, sqs
+
 
 class FileTransformEvent:
     """

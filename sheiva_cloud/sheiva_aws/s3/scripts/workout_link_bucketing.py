@@ -1,3 +1,6 @@
+# pylint: disable=all
+# mypy: ignore-errors
+
 """
 Script to bucket the full male workout link csv into
 age buckets for the Kuda workout scraper. For local

@@ -14,7 +14,9 @@ from sheiva_cloud.sheiva_aws.sqs import (
     SqsEvent,
     SqsResponse,
 )
-from sheiva_cloud.sheiva_aws.sqs.message_parsers import file_transformer_message_parser
+from sheiva_cloud.sheiva_aws.sqs.message_parsers import (
+    file_transformer_message_parser,
+)
 from sheiva_cloud.sheiva_aws.sqs.utils import process_sqs_event
 
 
@@ -95,7 +97,10 @@ class HighriseWorkoutTransformEvent(FileTransformEvent):
         """
 
         for component_key, components in parsed_results.items():
-            bucket_key = f"{self.message['s3_output_bucket_key']}/{component_key}/{file_name}.csv"
+            bucket_key = (
+                f"{self.message['s3_output_bucket_key']}/"
+                f"{component_key}/{file_name}.csv"
+            )
             pd.DataFrame(components).to_csv(
                 f"s3://{SHEIVA_SCRAPE_BUCKET}/{bucket_key}", index=False
             )

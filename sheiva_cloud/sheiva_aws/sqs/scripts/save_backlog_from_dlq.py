@@ -35,7 +35,7 @@ def main():
             sqs.delete_message(message["ReceiptHandle"])
         messages = sqs.receive_message(max_number_of_messages=10)
 
-    with open(f"dlq_backlog-{uuid4()}.json", "w") as f:
+    with open(f"dlq_backlog-{uuid4()}.json", "w", encoding="utf-8") as f:
         json.dump(message_dicts, f, indent=4)
 
 

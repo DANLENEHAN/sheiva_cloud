@@ -16,8 +16,8 @@ def main(sqs_client: boto3.client, backlog_file: str):
         sqs_client=sqs_client,
     )
 
-    f = open(backlog_file, "r")
-    message_dicts = json.load(f)
+    with open(backlog_file, "r", encoding="utf-8") as f:
+        message_dicts = json.load(f)
     print(len(message_dicts))
     for _, message_dict in enumerate(message_dicts):
         queue.send_message(
@@ -34,8 +34,7 @@ def main(sqs_client: boto3.client, backlog_file: str):
 
 if __name__ == "__main__":
     boto3_session = boto3.Session()
-    sqs_client = boto3_session.client("sqs")
     main(
-        sqs_client=sqs_client,
+        sqs_client=boto3_session.client("sqs"),
         backlog_file="dlq_backlog-055f4b6d-9205-4787-a3fe-bf86d62d6c5d.json",
     )

@@ -81,6 +81,10 @@ def get_transform_canidates(s3_client: boto3.client) -> List[str]:
 def send_messages_to_transform_queue(
     sqs_client: boto3.client, files_to_transform: List[str]
 ):
+    """
+    Sends messages to the transform queue.
+    """
+
     transform_queue = StandardClient(
         queue_url=WORKOUT_FILE_TRANSFORM_QUEUE, sqs_client=sqs_client
     )
@@ -94,7 +98,7 @@ def send_messages_to_transform_queue(
                 },
                 "s3_output_bucket_key": {
                     "DataType": "String",
-                    "StringValue": f"highrise/transformed/workout-data",
+                    "StringValue": "highrise/transformed/workout-data",
                 },
             },
         )

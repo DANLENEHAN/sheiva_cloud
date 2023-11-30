@@ -2,7 +2,7 @@ import json
 
 import boto3
 
-from sheiva_cloud import sqs
+from sheiva_cloud.sheiva_aws import sqs
 
 
 def main(sqs_client: boto3.client, backlog_file: str):

@@ -9,7 +9,7 @@ from typing import List
 
 import boto3
 
-from sheiva_cloud import s3, sqs
+from sheiva_cloud.sheiva_aws import s3, sqs
 
 TRANSFORM_LIMIT = int(os.getenv("TRANSFORM_LIMIT", "10"))
 

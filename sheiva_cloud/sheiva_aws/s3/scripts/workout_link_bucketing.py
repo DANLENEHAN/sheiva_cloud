@@ -13,7 +13,7 @@ from typing import Dict
 import boto3
 import pandas as pd
 
-from sheiva_cloud import s3
+from sheiva_cloud.sheiva_aws import s3
 
 GENDER = "male"
 

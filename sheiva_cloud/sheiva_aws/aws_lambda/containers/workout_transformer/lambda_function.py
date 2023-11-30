@@ -5,7 +5,7 @@ four seperate csv files which aim to mimic the Grau ORM model structures
 
 import boto3
 
-from sheiva_cloud import aws_lambda
+from sheiva_cloud.sheiva_aws import aws_lambda
 
 
 # pylint: disable=unused-argument

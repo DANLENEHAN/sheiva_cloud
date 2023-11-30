@@ -5,7 +5,7 @@ Module for custom SQS utilities.
 import json
 from typing import Tuple
 
-from sheiva_cloud import sqs
+from sheiva_cloud.sheiva_aws import sqs
 
 
 def scrape_message_parser(

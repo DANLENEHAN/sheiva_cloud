@@ -9,7 +9,7 @@ import os
 
 import boto3
 
-from sheiva_cloud import sqs
+from sheiva_cloud.sheiva_aws import sqs
 
 NUMBER_WORKOUT_LINKS_PER_MESSAGE = os.getenv(
     "NUMBER_WORKOUT_LINKS_PER_MESSAGE", None

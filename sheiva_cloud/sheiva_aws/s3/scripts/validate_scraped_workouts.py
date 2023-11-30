@@ -10,7 +10,7 @@ from collections import defaultdict
 
 import boto3
 
-from sheiva_cloud import s3
+from sheiva_cloud.sheiva_aws import s3
 
 scraped_workouts_dir = "highrise/workout-data/male"
 

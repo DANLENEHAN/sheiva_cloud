@@ -10,7 +10,7 @@ import os
 import boto3
 from kuda.scrapers import parse_workout_html
 
-from sheiva_cloud import aws_lambda, sqs
+from sheiva_cloud.sheiva_aws import aws_lambda, sqs
 
 ASYNC_BATCH_SIZE = int(os.getenv("ASYNC_BATCH_SIZE", "10"))
 

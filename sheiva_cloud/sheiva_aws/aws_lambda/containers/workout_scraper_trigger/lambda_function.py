@@ -12,7 +12,7 @@ from typing import List
 
 import boto3
 
-from sheiva_cloud import s3, sqs
+from sheiva_cloud.sheiva_aws import s3, sqs
 
 GENDER = os.getenv("GENDER", "")
 

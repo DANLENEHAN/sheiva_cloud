@@ -1,1 +1,0 @@
-from sheiva_cloud.sheiva_aws.aws_lambda import event_handlers

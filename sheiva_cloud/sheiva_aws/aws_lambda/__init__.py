@@ -1,1 +1,1 @@
-import sheiva_cloud.sheiva_aws.aws_lambda.event_handlers as event_handlers
+from . import event_handlers

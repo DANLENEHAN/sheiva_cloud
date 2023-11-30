@@ -1,8 +1,6 @@
-from typing import TypeVar
-
-import message_parsers
-import utils
-from classes import (
+from . import message_parsers
+from . import utils
+from .classes import (
     FileTransformerMessage,
     ParsedSqsMessage,
     ReceivedSqsMessage,
@@ -10,7 +8,7 @@ from classes import (
     SqsEvent,
     SqsResponse,
 )
-from clients import StandardClient as StandardSqsClient
+from .clients import StandardClient as StandardSqsClient
 
 BASE_URL = "https://sqs.eu-west-1.amazonaws.com/381528172721"
 
@@ -22,5 +20,3 @@ WORKOUT_FILE_TRANSFORM_QUEUE = f"{BASE_URL}/WorkoutFileTransformQueue"
 WORKOUT_FILE_TRANSFORM_QUEUE_DEAD_LETTER_QUEUE = (
     f"{BASE_URL}/WorkoutFileTransformQueueDeadLetterQueue"
 )
-
-ParsedSqsMessageType = TypeVar("ParsedSqsMessageType", bound=ParsedSqsMessage)

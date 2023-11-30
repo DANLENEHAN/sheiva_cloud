@@ -5,22 +5,25 @@ Module for custom SQS utilities.
 import json
 from typing import Tuple
 
-from sheiva_cloud.sheiva_aws import sqs
-
+from .classes import (
+	ReceivedSqsMessage,
+    ScraperMessage,
+    FileTransformerMessage
+)
 
 def scrape_message_parser(
-    message: sqs.ReceivedSqsMessage,
-) -> sqs.ScraperMessage:
+    message: ReceivedSqsMessage,
+) -> ScraperMessage:
     """
     Parses a scrape message from the SQS queue. Follows
-    the sqs.ScraperMessage structure.
+    the ScraperMessage structure.
     Args:
-        message (sqs.ReceivedSqsMessage): message from the SQS queue
+        message (ReceivedSqsMessage): message from the SQS queue
     Returns:
-        sqs.ScraperMessage: parsed message
+        ScraperMessage: parsed message
     """
 
-    return sqs.ScraperMessage(
+    return ScraperMessage(
         {
             "urls": json.loads(message["body"]),
             "receiptHandle": message["receiptHandle"],
@@ -32,18 +35,18 @@ def scrape_message_parser(
 
 
 def file_transformer_message(
-    message: sqs.ReceivedSqsMessage,
-) -> sqs.FileTransformerMessage:
+    message: ReceivedSqsMessage,
+) -> FileTransformerMessage:
     """
     Parses a file transformer message from the SQS queue. Follows
-    the sqs.FileTransformerMessage structure.
+    the FileTransformerMessage structure.
     Args:
-        message (sqs.ReceivedSqsMessage): message from the SQS queue
+        message (ReceivedSqsMessage): message from the SQS queue
     Returns:
-        sqs.FileTransformerMessage: parsed message
+        FileTransformerMessage: parsed message
     """
 
-    return sqs.FileTransformerMessage(
+    return FileTransformerMessage(
         {
             "receiptHandle": message["receiptHandle"],
             "s3_input_file": message["messageAttributes"]["s3_input_file"][
@@ -57,7 +60,7 @@ def file_transformer_message(
 
 
 def workout_scrape_trigger_msg(
-    message: sqs.ReceivedSqsMessage,
+    message: ReceivedSqsMessage,
 ) -> Tuple[int, str]:
     """
     Parses the workout scrape trigger message.

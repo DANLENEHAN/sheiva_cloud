@@ -3,7 +3,7 @@ from uuid import uuid4
 
 import boto3
 
-from sheiva_cloud import sqs
+from sheiva_cloud.sheiva_aws import sqs
 
 
 def main():

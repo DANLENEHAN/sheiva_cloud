@@ -6,20 +6,24 @@ from typing import Callable, List
 
 import boto3
 
-from sheiva_cloud.sheiva_aws import sqs
+from .classes import (
+    SqsEvent,
+    ParsedSqsMessageType,
+    SqsResponse,
+)
 
 
 def process_sqs_event(
-    sqs_event: sqs.SqsEvent, parse_function: Callable
-) -> List[sqs.ParsedSqsMessageType]:
+    sqs_event: SqsEvent, parse_function: Callable
+) -> List[ParsedSqsMessageType]:
     """
     Takes SQS message event and extracts all the message bodies
     into a parsed list.
     Args:
-        sqs_event (sqs.SqsEvent): SQS event
+        sqs_event (SqsEvent): SQS event
         parse_function (Callable): function to parse message
     Returns:
-        List[sqs.ParsedSqsMessageType]: list of parsed SQS messages
+        List[ParsedSqsMessageType]: list of parsed SQS messages
     """
 
     parsed_messages = []
@@ -38,7 +42,7 @@ def process_sqs_event(
 def process_sqs_response(
     source_queue: boto3.client,
     dlq: boto3.client,
-    sqs_response: sqs.SqsResponse,
+    sqs_response: SqsResponse,
 ):
     """
     Function for processing an SQS response. Sending delete response to
@@ -47,7 +51,7 @@ def process_sqs_response(
     Args:
         source_queue (boto3.client): source_queue of the SQS event
         dlq (boto3.client): the dead-letter queue for the SQS event
-        sqs_response (sqs.SqsResponse): the SQS response after processing the
+        sqs_response (SqsResponse): the SQS response after processing the
             event.
     """
 

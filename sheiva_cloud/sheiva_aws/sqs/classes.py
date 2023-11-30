@@ -1,4 +1,4 @@
-from typing import Dict, List, TypedDict
+from typing import Dict, List, TypedDict, TypeVar
 
 
 class ReceivedSqsMessage(TypedDict):
@@ -75,3 +75,5 @@ class FileTransformerMessage(ParsedSqsMessage):
 
     s3_input_file: str
     s3_output_bucket_key: str
+
+ParsedSqsMessageType = TypeVar("ParsedSqsMessageType", bound=ParsedSqsMessage)

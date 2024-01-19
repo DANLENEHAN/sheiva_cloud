@@ -4,6 +4,7 @@ import boto3
 
 from sheiva_cloud.sheiva_aws import sqs
 
+BACKLOG_FILE_NAME = "dlq_backlog.json"
 
 def main(sqs_client: boto3.client, backlog_file: str):
     """
@@ -35,5 +36,5 @@ if __name__ == "__main__":
     boto3_session = boto3.Session()
     main(
         sqs_client=boto3_session.client("sqs"),
-        backlog_file="dlq_backlog-055f4b6d-9205-4787-a3fe-bf86d62d6c5d.json",
+        backlog_file=BACKLOG_FILE_NAME
     )

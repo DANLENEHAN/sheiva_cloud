@@ -1,10 +1,11 @@
 import json
-from uuid import uuid4
 
 import boto3
 
 from sheiva_cloud.sheiva_aws import sqs
 
+
+BACKLOG_FILE_NAME = "dlq_backlog.json"
 
 def main():
     """
@@ -34,7 +35,7 @@ def main():
             sqs_client.delete_message(message["ReceiptHandle"])
         messages = sqs_client.receive_message(max_number_of_messages=10)
 
-    with open(f"dlq_backlog-{uuid4()}.json", "w", encoding="utf-8") as f:
+    with open(BACKLOG_FILE_NAME, "w", encoding="utf-8") as f:
         json.dump(message_dicts, f, indent=4)
 
 

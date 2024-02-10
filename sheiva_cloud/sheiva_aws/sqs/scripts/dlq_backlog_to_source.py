@@ -1,4 +1,5 @@
 import json
+import os
 
 import boto3
 
@@ -38,3 +39,4 @@ if __name__ == "__main__":
         sqs_client=boto3_session.client("sqs"),
         backlog_file=BACKLOG_FILE_NAME
     )
+    os.remove(BACKLOG_FILE_NAME)

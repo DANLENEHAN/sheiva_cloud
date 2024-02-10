@@ -82,7 +82,7 @@ def get_and_post_workout_links(
             to scrape per age group
     """
 
-    for bucket_dir in workout_link_bucket_dirs:
+    for bucket_dir in workout_link_bucket_dirs*2:
         print(f"Getting workout links from bucket: {bucket_dir}")
         bucket = s3_client.get_object(
             Bucket=s3.SHEIVA_SCRAPE_BUCKET, Key=bucket_dir
